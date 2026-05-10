@@ -88,6 +88,24 @@ export type ProductCreatePayload = {
 
 export type ProductPatchPayload = Partial<Omit<ProductCreatePayload, 'slug' | 'variants'>>;
 
+export type AdminCategory = {
+  id: number;
+  name: string;
+  description: string | null;
+  is_visible: boolean;
+  sort_order: number;
+  product_count: number;
+};
+
+export type CategoryCreatePayload = {
+  name: string;
+  description?: string | null;
+  is_visible?: boolean;
+  sort_order?: number;
+};
+
+export type CategoryPatchPayload = Partial<CategoryCreatePayload>;
+
 export type AdminSubscription = {
   id: number;
   email: string;
@@ -133,6 +151,15 @@ export const adminApi = {
 
   listProducts: () => request<AdminProduct[]>('/admin/products'),
   listCategories: () => request<string[]>('/admin/products/categories'),
+
+  // Category management (dedicated)
+  listCategoryObjects: () => request<AdminCategory[]>('/admin/categories'),
+  createCategory: (payload: CategoryCreatePayload) =>
+    request<AdminCategory>('/admin/categories', { method: 'POST', body: JSON.stringify(payload) }),
+  updateCategory: (id: number, payload: CategoryPatchPayload) =>
+    request<AdminCategory>(`/admin/categories/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteCategory: (id: number) =>
+    request<void>(`/admin/categories/${id}`, { method: 'DELETE' }),
   createProduct: (payload: ProductCreatePayload) =>
     request<AdminProduct>('/admin/products', { method: 'POST', body: JSON.stringify(payload) }),
   updateProduct: (slug: string, payload: ProductPatchPayload) =>

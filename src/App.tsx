@@ -14,6 +14,8 @@ import AeroPress from './routes/methods/AeroPress';
 import Espresso from './routes/methods/Espresso';
 import V60 from './routes/methods/V60';
 import Subscription from './routes/Subscription';
+import AdminCategories from './routes/admin/Categories';
+import AdminCoffeeSubscriptions from './routes/admin/CoffeeSubscriptions';
 import AdminDashboard from './routes/admin/Dashboard';
 import AdminLayout from './routes/admin/Layout';
 import AdminLogin from './routes/admin/Login';
@@ -79,7 +81,9 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="categories" element={<AdminCategories />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="coffee-subscriptions" element={<AdminCoffeeSubscriptions />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />
           </Route>
 
