@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
+import { ecommerceEvents } from '../lib/analytics';
 import { api } from '../lib/api';
 
 type Variant = 'dark' | 'light';
@@ -28,6 +29,7 @@ export default function NewsletterForm({
       setStatus('ok');
       setMessage(res.message);
       setEmail('');
+      if (res.status === 'subscribed') ecommerceEvents.newsletterSignup();
     } catch (err) {
       setStatus('error');
       setMessage('No pudimos procesar tu correo. Revísalo e intenta de nuevo.');

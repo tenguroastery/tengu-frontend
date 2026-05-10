@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
+import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import type { ShippingMethod } from '../types';
@@ -76,6 +77,16 @@ export default function Checkout() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    ecommerceEvents.beginCheckout(
+      items.map((i) => ({
+        item_id: i.productSlug,
+        item_name: i.productName,
+        item_variant: `${i.sizeG}g`,
+        price: i.unitPriceClp,
+        quantity: i.quantity,
+      })),
+      total,
+    );
     try {
       const order = await api.createOrder({
         customer_email: form.customer_email.trim(),

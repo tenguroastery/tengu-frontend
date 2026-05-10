@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import Breadcrumbs from '../components/Breadcrumbs';
+import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP } from '../lib/api';
 import { setStructuredData, useSeo } from '../lib/seo';
 import { useCart } from '../store/cart';
@@ -25,6 +27,11 @@ export default function Product() {
         setProduct(p);
         setSelectedSize(p.variants[0]?.size_g ?? null);
         setQuantity(1);
+        ecommerceEvents.viewItem({
+          item_id: p.slug,
+          item_name: p.name,
+          price: p.variants[0]?.price_clp ?? 0,
+        });
         setStructuredData('product', {
           '@context': 'https://schema.org',
           '@type': 'Product',
@@ -52,10 +59,10 @@ export default function Product() {
   }, [slug]);
 
   useSeo({
-    title: product ? `${product.name} — ${product.origin}` : 'Café de especialidad',
+    title: product ? shortenProductTitle(product.name, product.origin) : 'Café de especialidad',
     description: product
-      ? `${product.origin} · ${product.process ?? ''} · Notas: ${product.tasting_notes.join(', ')}.`
-      : 'Café de especialidad chileno.',
+      ? buildProductDescription(product)
+      : 'Café de especialidad chileno tostado fresco.',
     canonical: `/shop/${slug}`,
     image: product?.image ? `/uploads/${product.image}` : undefined,
     type: 'product',
@@ -86,21 +93,38 @@ export default function Product() {
       },
       quantity,
     );
+    ecommerceEvents.addToCart({
+      item_id: product.slug,
+      item_name: product.name,
+      item_variant: `${variant.size_g}g`,
+      price: variant.price_clp,
+      quantity,
+    });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
   };
 
   return (
     <article className="mx-auto max-w-6xl px-6 py-12">
-      <Link to="/shop" className="text-sm text-tengu-ink hover:underline">← Tienda</Link>
+      <Breadcrumbs
+        items={[
+          { label: 'Inicio', href: '/' },
+          { label: 'Tienda', href: '/shop' },
+          { label: product.name },
+        ]}
+      />
 
       <div className="mt-6 grid gap-12 md:grid-cols-2">
         <div className="aspect-[3/4] overflow-hidden rounded-lg bg-white">
           {product.image && (
             <img
               src={`/uploads/${product.image}`}
-              alt={product.name}
+              alt={`Bolsa de ${product.name} — café ${product.origin}`}
               className="h-full w-full object-cover"
+              width={600}
+              height={800}
+              fetchPriority="high"
+              decoding="async"
             />
           )}
         </div>
@@ -199,4 +223,22 @@ function Field({ label, value }: { label: string; value: string }) {
       <dd className="mt-0.5">{value}</dd>
     </div>
   );
+}
+
+function shortenProductTitle(name: string, origin: string): string {
+  // El title se construye con la fórmula del SEO hook (max 60ch incluyendo " – Tengu Roastery").
+  // Disponemos de ~43ch para el título mismo. Limpiamos el nombre largo "Marie Gorette Mukamurenzi — Rwanda Lavado" → "Rwanda Lavado · Marie Gorette".
+  const cleaned = name.replace(/^Marie Gorette Mukamurenzi — /i, '');
+  // Si el origin ya está en el nombre, no lo dupliques.
+  if (cleaned.toLowerCase().includes(origin.toLowerCase())) return cleaned;
+  return `${cleaned} · ${origin}`;
+}
+
+function buildProductDescription(p: ProductT): string {
+  const parts = [
+    `${p.origin}${p.process ? ` · ${p.process}` : ''}`,
+    p.tasting_notes.length > 0 ? `Notas: ${p.tasting_notes.slice(0, 4).join(', ')}` : '',
+    `Tostado en Chile, perfil ${p.roast_profile.toLowerCase()}`,
+  ];
+  return parts.filter(Boolean).join('. ') + '.';
 }

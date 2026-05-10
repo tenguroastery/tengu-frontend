@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
+import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
 import { useCart } from '../store/cart';
 import type { Order } from '../types';
@@ -43,7 +44,20 @@ export default function Thanks() {
     api.getOrder(Number(orderId))
       .then((o) => {
         setOrder(o);
-        if (o.status === 'paid') clearCart();
+        if (o.status === 'paid') {
+          clearCart();
+          ecommerceEvents.purchase(
+            o.id,
+            o.items.map((i) => ({
+              item_id: i.product_slug,
+              item_name: i.product_name,
+              item_variant: `${i.size_g}g`,
+              price: i.unit_price_clp,
+              quantity: i.quantity,
+            })),
+            o.total_clp,
+          );
+        }
       })
       .catch((err) => setError(String(err)))
       .finally(() => setLoading(false));

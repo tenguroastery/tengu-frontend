@@ -42,6 +42,10 @@ export default function Cart() {
                     src={`/uploads/${item.productImage}`}
                     alt={item.productName}
                     className="h-24 w-20 rounded-md object-cover"
+                    width={80}
+                    height={96}
+                    loading="lazy"
+                    decoding="async"
                   />
                 )}
               </Link>

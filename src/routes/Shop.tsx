@@ -10,9 +10,9 @@ type Category = (typeof CATEGORIES)[number];
 
 export default function Shop() {
   useSeo({
-    title: 'Tienda — Cafés de especialidad de Colombia, Perú y Rwanda',
+    title: 'Tienda de café de especialidad',
     description:
-      'Catálogo de Tengu Roastery: 8 cafés de origen, perfiles de filtrado y espresso. Compra online y recibe en tu casa.',
+      'Catálogo Tengu Roastery: 8 cafés de origen único, perfiles para filtrado y espresso. Despacho 24-48h en todo Chile.',
     canonical: '/shop',
   });
   const [products, setProducts] = useState<Product[]>([]);

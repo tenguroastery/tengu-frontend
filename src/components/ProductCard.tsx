@@ -15,9 +15,12 @@ export default function ProductCard({ product }: { product: Product }) {
         {product.image && (
           <img
             src={`/uploads/${product.image}`}
-            alt={product.name}
+            alt={`Bolsa de ${product.name}`}
             className="h-full w-full object-cover transition group-hover:scale-105"
             loading="lazy"
+            decoding="async"
+            width={400}
+            height={533}
           />
         )}
         <span className="absolute right-3 top-3 rounded-full bg-tengu-dark/90 px-3 py-1 text-xs uppercase tracking-wider text-tengu-cream">

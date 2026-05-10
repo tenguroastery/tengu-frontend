@@ -63,9 +63,13 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 text-xs opacity-50">
+        <div className="mx-auto flex flex-wrap items-center justify-between gap-3 px-6 py-4 text-xs opacity-60 max-w-6xl">
           <span>© {new Date().getFullYear()} Tengu Roastery</span>
-          <span>Colombia · Perú · Rwanda</span>
+          <div className="flex gap-4">
+            <Link to="/sobre-nosotros" className="hover:text-tengu-mustard">Sobre nosotros</Link>
+            <Link to="/privacidad" className="hover:text-tengu-mustard">Privacidad</Link>
+            <Link to="/terminos" className="hover:text-tengu-mustard">Términos</Link>
+          </div>
         </div>
       </div>
     </footer>

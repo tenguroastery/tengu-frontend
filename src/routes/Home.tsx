@@ -67,9 +67,9 @@ const PROCESS_STEPS = [
 
 export default function Home() {
   useSeo({
-    title: 'Tengu Roastery — Café de especialidad tostado en Chile',
+    title: 'Café de especialidad tostado en Chile',
     description:
-      'Café de especialidad chileno. Granos seleccionados de Colombia, Perú y Rwanda, tostados frescos en pequeños lotes para filtrado o espresso.',
+      'Granos seleccionados de Colombia, Perú y Rwanda. Tostados frescos en pequeños lotes para filtrado y espresso. Despacho a todo Chile.',
     canonical: '/',
   });
 
@@ -124,6 +124,10 @@ export default function Home() {
                 src="/uploads/rwanda-marie-gorette-natural.jpg"
                 alt="Bolsa de Marie Gorette Mukamurenzi — Rwanda Natural"
                 className="h-full w-full object-cover"
+                width={400}
+                height={533}
+                fetchPriority="high"
+                decoding="async"
               />
             </div>
           </div>
@@ -148,9 +152,12 @@ export default function Home() {
               <div className="aspect-[4/5] overflow-hidden bg-tengu-cream">
                 <img
                   src={`/uploads/${story.image}`}
-                  alt={`Café de ${story.name}`}
+                  alt={`Café de ${story.name} — Tengu Roastery`}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
+                  width={400}
+                  height={500}
                 />
               </div>
               <div className="p-6">
