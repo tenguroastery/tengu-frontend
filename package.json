@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-sitemap.mjs && tsc -b && vite build",
+    "build": "node scripts/build-sitemap.mjs && tsc -b && vite build && node scripts/prerender.mjs",
+    "build:nossg": "node scripts/build-sitemap.mjs && tsc -b && vite build",
     "sitemap": "node scripts/build-sitemap.mjs",
+    "prerender": "node scripts/prerender.mjs",
     "optimize:heroes": "node scripts/optimize-heroes.mjs",
     "preview": "vite preview",
     "lint": "tsc --noEmit && eslint \"src/**/*.{ts,tsx}\"",
@@ -23,6 +25,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@sparticuz/chromium": "^148.0.0",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
@@ -34,6 +37,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "postcss": "^8.4.49",
     "prettier": "^3.8.3",
+    "puppeteer-core": "^24.43.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",

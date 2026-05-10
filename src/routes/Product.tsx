@@ -217,6 +217,32 @@ export default function Product() {
           )}
         </div>
       </div>
+
+      {/* Sticky bottom bar — solo mobile (md y arriba lo oculta) */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-tengu-dark/10 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur md:hidden"
+        aria-label="Agregar al carrito"
+      >
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-xs text-tengu-dark/60">
+              {variant.size_g >= 1000 ? `${variant.size_g / 1000} kg` : `${variant.size_g} g`} · {quantity}x
+            </p>
+            <p className="font-display text-lg leading-none text-tengu-ink">
+              {formatCLP(variant.price_clp * quantity)}
+            </p>
+          </div>
+          <button
+            onClick={handleAdd}
+            className="rounded-md bg-tengu-mustard px-5 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition active:scale-95 hover:bg-tengu-coral hover:text-white"
+          >
+            {justAdded ? '✓ Agregado' : 'Agregar'}
+          </button>
+        </div>
+      </div>
+
+      {/* Spacer para que el sticky no tape el último contenido en mobile */}
+      <div aria-hidden="true" className="h-24 md:hidden" />
     </article>
   );
 }
