@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /thanks/
+Disallow: /api/
+
+Sitemap: https://tenguroastery.cl/sitemap.xml
