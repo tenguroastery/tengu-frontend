@@ -1,10 +1,17 @@
 User-agent: *
 Allow: /
 
+# Bloquear rutas privadas / técnicas
 Disallow: /admin
 Disallow: /admin/
+Disallow: /carrito
 Disallow: /checkout
 Disallow: /thanks/
 Disallow: /api/
+Disallow: /uploads/
+# Bloquear rutas viejas en inglés (existen como redirect 301, no las indexes directo)
+Disallow: /shop
+Disallow: /shop/
+Disallow: /cart
 
 Sitemap: https://tenguroastery.cl/sitemap.xml

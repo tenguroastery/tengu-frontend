@@ -109,7 +109,7 @@ export default function Home() {
             </p>
             <div className="mt-10">
               <Link
-                to="/shop"
+                to="/tienda"
                 className="inline-block rounded-md bg-tengu-mustard px-8 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-tengu-dark transition hover:bg-tengu-cream"
               >
                 Comprar café →
@@ -181,7 +181,7 @@ export default function Home() {
               <p className="text-xs uppercase tracking-[0.4em] text-tengu-mustard">Selección de la semana</p>
               <h2 className="mt-2 font-display text-3xl">Destacados</h2>
             </div>
-            <Link to="/shop" className="text-sm uppercase tracking-wider text-tengu-ink hover:underline">
+            <Link to="/tienda" className="text-sm uppercase tracking-wider text-tengu-ink hover:underline">
               Ver todos →
             </Link>
           </div>
@@ -231,7 +231,7 @@ export default function Home() {
           Si nunca has probado café de especialidad, este es un buen lugar para empezar.
         </p>
         <Link
-          to="/shop"
+          to="/tienda"
           className="mt-8 inline-block rounded-md bg-tengu-dark px-8 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-tengu-cream transition hover:bg-tengu-mustard hover:text-tengu-dark"
         >
           Ver toda la tienda

@@ -13,7 +13,7 @@ export default function Shop() {
     title: 'Tienda de café de especialidad',
     description:
       'Catálogo Tengu Roastery: 8 cafés de origen único, perfiles para filtrado y espresso. Despacho 24-48h en todo Chile.',
-    canonical: '/shop',
+    canonical: '/tienda',
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import Breadcrumbs from '../components/Breadcrumbs';
 import { ecommerceEvents } from '../lib/analytics';
-import { api, formatCLP } from '../lib/api';
+import { api, formatCLP, pricePerKg } from '../lib/api';
 import { setStructuredData, useSeo } from '../lib/seo';
 import { useCart } from '../store/cart';
 import type { Product as ProductT } from '../types';
@@ -46,7 +46,7 @@ export default function Product() {
             price: v.price_clp,
             priceCurrency: 'CLP',
             availability: 'https://schema.org/InStock',
-            url: `https://tenguroastery.cl/shop/${p.slug}`,
+            url: `https://tenguroastery.cl/cafe/${p.slug}`,
             itemOffered: {
               '@type': 'Product',
               name: `${p.name} — ${v.size_g >= 1000 ? `${v.size_g / 1000} kg` : `${v.size_g} g`}`,
@@ -63,7 +63,7 @@ export default function Product() {
     description: product
       ? buildProductDescription(product)
       : 'Café de especialidad chileno tostado fresco.',
-    canonical: `/shop/${slug}`,
+    canonical: `/cafe/${slug}`,
     image: product?.image ? `/uploads/${product.image}` : undefined,
     type: 'product',
   });
@@ -73,7 +73,7 @@ export default function Product() {
     return (
       <div className="mx-auto max-w-6xl px-6 py-16">
         <p className="text-tengu-coral">Producto no encontrado.</p>
-        <Link to="/shop" className="mt-4 inline-block text-tengu-ink hover:underline">
+        <Link to="/tienda" className="mt-4 inline-block text-tengu-ink hover:underline">
           ← Volver a la tienda
         </Link>
       </div>
@@ -109,7 +109,7 @@ export default function Product() {
       <Breadcrumbs
         items={[
           { label: 'Inicio', href: '/' },
-          { label: 'Tienda', href: '/shop' },
+          { label: 'Tienda', href: '/tienda' },
           { label: product.name },
         ]}
       />
@@ -197,7 +197,12 @@ export default function Product() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-6">
-            <p className="font-display text-3xl text-tengu-ink">{formatCLP(variant.price_clp * quantity)}</p>
+            <div>
+              <p className="font-display text-3xl text-tengu-ink">{formatCLP(variant.price_clp * quantity)}</p>
+              <p className="mt-1 text-xs text-tengu-dark/50">
+                {formatCLP(pricePerKg(variant.price_clp, variant.size_g))} por kilo
+              </p>
+            </div>
             <button
               onClick={handleAdd}
               className="rounded-md bg-tengu-mustard px-6 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"

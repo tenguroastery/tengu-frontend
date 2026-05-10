@@ -75,7 +75,7 @@ export default function Thanks() {
       <div className="mx-auto max-w-2xl px-6 py-24 text-center">
         <h1 className="font-display text-3xl text-tengu-coral">No encontramos esa orden</h1>
         <p className="mt-3 text-tengu-dark/60">{error}</p>
-        <Link to="/shop" className="mt-6 inline-block text-tengu-ink hover:underline">← Volver a la tienda</Link>
+        <Link to="/tienda" className="mt-6 inline-block text-tengu-ink hover:underline">← Volver a la tienda</Link>
       </div>
     );
   }
@@ -150,14 +150,14 @@ export default function Thanks() {
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
-          to="/shop"
+          to="/tienda"
           className="rounded-md bg-tengu-ink px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark"
         >
           Seguir comprando
         </Link>
         {(effectiveStatus === 'failed' || effectiveStatus === 'canceled') && (
           <Link
-            to="/cart"
+            to="/carrito"
             className="rounded-md border border-tengu-dark/20 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:border-tengu-ink"
           >
             Volver al carrito

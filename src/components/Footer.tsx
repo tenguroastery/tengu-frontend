@@ -28,12 +28,13 @@ export default function Footer() {
         </div>
 
         <div className="text-sm">
-          <p className="mb-3 font-semibold uppercase tracking-wider text-tengu-mustard">Tienda</p>
+          <p className="mb-3 font-semibold uppercase tracking-wider text-tengu-mustard">Café</p>
           <ul className="space-y-2 opacity-80">
-            <li><Link to="/shop" className="hover:text-tengu-mustard">Todos los cafés</Link></li>
-            <li><Link to="/shop" className="hover:text-tengu-mustard">Filtrado</Link></li>
-            <li><Link to="/shop" className="hover:text-tengu-mustard">Espresso</Link></li>
-            <li><Link to="/cart" className="hover:text-tengu-mustard">Carrito</Link></li>
+            <li><Link to="/tienda" className="hover:text-tengu-mustard">Todos los cafés</Link></li>
+            <li><Link to="/metodos/v60" className="hover:text-tengu-mustard">Método V60</Link></li>
+            <li><Link to="/metodos/aeropress" className="hover:text-tengu-mustard">AeroPress</Link></li>
+            <li><Link to="/metodos/espresso" className="hover:text-tengu-mustard">Espresso</Link></li>
+            <li><Link to="/horeca" className="hover:text-tengu-mustard">Para tu negocio (Horeca)</Link></li>
           </ul>
         </div>
 

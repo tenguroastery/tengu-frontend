@@ -75,7 +75,7 @@ export default function About() {
             especialidad, te recomendamos los perfiles de filtrado.
           </p>
           <Link
-            to="/shop"
+            to="/tienda"
             className="mt-8 inline-block rounded-md bg-tengu-mustard px-8 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
           >
             Ver tienda

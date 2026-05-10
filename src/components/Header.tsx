@@ -20,11 +20,11 @@ export default function Header() {
         </Link>
         <nav className="flex items-center gap-5 sm:gap-7">
           <NavLink to="/" end className={navClass}>Inicio</NavLink>
-          <NavLink to="/shop" className={navClass}>Tienda</NavLink>
+          <NavLink to="/tienda" className={navClass}>Tienda</NavLink>
           <InstagramLink className="text-tengu-cream/70 transition hover:text-tengu-mustard">
             <InstagramIcon size={20} />
           </InstagramLink>
-          <NavLink to="/cart" className={navClass}>
+          <NavLink to="/carrito" className={navClass}>
             <span className="inline-flex items-center gap-2">
               <CartIcon />
               {count > 0 && (

@@ -1,0 +1,4 @@
+# Redirects 301 a nivel de hosting (Netlify / Cloudflare Pages)
+/shop              /tienda          301
+/shop/*            /cafe/:splat     301
+/cart              /carrito         301

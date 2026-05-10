@@ -39,9 +39,18 @@ export const api = {
 };
 
 export function formatCLP(value: number): string {
-  return `$${value.toLocaleString('es-CL')}`;
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function formatSize(sizeG: number): string {
   return sizeG >= 1000 ? `${sizeG / 1000} kg` : `${sizeG} g`;
+}
+
+/** CLP por kilo dado precio total y gramos de la variante. */
+export function pricePerKg(priceClp: number, sizeG: number): number {
+  return Math.round((priceClp / sizeG) * 1000);
 }

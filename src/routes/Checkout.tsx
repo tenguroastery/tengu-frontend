@@ -67,7 +67,7 @@ export default function Checkout() {
   }, [webpay]);
 
   if (items.length === 0 && !submitting && !webpay) {
-    return <Navigate to="/cart" replace />;
+    return <Navigate to="/carrito" replace />;
   }
 
   const update = (key: keyof typeof form) => (e: { target: { value: string } }) =>

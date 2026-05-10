@@ -16,7 +16,7 @@ export default function Cart() {
         <h1 className="font-display text-3xl">Tu carrito está vacío</h1>
         <p className="mt-3 text-tengu-dark/60">Vamos a llenarlo con un buen café.</p>
         <Link
-          to="/shop"
+          to="/tienda"
           className="mt-8 inline-block rounded-md bg-tengu-mustard px-8 py-3 font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
         >
           Ir a la tienda
@@ -36,7 +36,7 @@ export default function Cart() {
         <ul className="divide-y divide-tengu-dark/10">
           {items.map((item) => (
             <li key={item.key} className="flex gap-4 py-4">
-              <Link to={`/shop/${item.productSlug}`} className="flex-shrink-0">
+              <Link to={`/cafe/${item.productSlug}`} className="flex-shrink-0">
                 {item.productImage && (
                   <img
                     src={`/uploads/${item.productImage}`}
@@ -52,7 +52,7 @@ export default function Cart() {
               <div className="flex flex-1 flex-col gap-1">
                 <div className="flex items-start justify-between gap-2">
                   <Link
-                    to={`/shop/${item.productSlug}`}
+                    to={`/cafe/${item.productSlug}`}
                     className="font-semibold leading-tight hover:text-tengu-ink"
                   >
                     {item.productName}

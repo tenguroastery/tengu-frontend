@@ -20,13 +20,13 @@ export default function CheckoutError() {
       </p>
       <div className="mt-8 flex justify-center gap-3">
         <Link
-          to="/cart"
+          to="/carrito"
           className="rounded-md bg-tengu-mustard px-6 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
         >
           Volver al carrito
         </Link>
         <Link
-          to="/shop"
+          to="/tienda"
           className="rounded-md border border-tengu-dark/20 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:border-tengu-ink"
         >
           Ver tienda

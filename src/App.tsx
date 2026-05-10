@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
 import AnalyticsBootstrap from './components/AnalyticsBootstrap';
 import CookieBanner from './components/CookieBanner';
@@ -7,6 +7,10 @@ import Header from './components/Header';
 import NewsletterPopup from './components/NewsletterPopup';
 import WhatsAppFab from './components/WhatsAppFab';
 import About from './routes/About';
+import Horeca from './routes/Horeca';
+import AeroPress from './routes/methods/AeroPress';
+import Espresso from './routes/methods/Espresso';
+import V60 from './routes/methods/V60';
 import AdminDashboard from './routes/admin/Dashboard';
 import AdminLayout from './routes/admin/Layout';
 import AdminLogin from './routes/admin/Login';
@@ -29,7 +33,7 @@ export default function App() {
   const isAdmin = location.pathname.startsWith('/admin');
   const isCheckoutFlow =
     location.pathname.startsWith('/checkout') || location.pathname.startsWith('/thanks');
-  const showPopup = !isAdmin && !isCheckoutFlow && location.pathname !== '/cart';
+  const showPopup = !isAdmin && !isCheckoutFlow && location.pathname !== '/carrito';
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -37,17 +41,26 @@ export default function App() {
       {!isAdmin && <Header />}
       <main className="flex-1">
         <Routes>
-          {/* Storefront */}
+          {/* Storefront — rutas canónicas en español */}
           <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/shop/:slug" element={<Product />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route path="/tienda" element={<Shop />} />
+          <Route path="/cafe/:slug" element={<Product />} />
+          <Route path="/carrito" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/thanks/:orderId" element={<Thanks />} />
           <Route path="/checkout/error" element={<CheckoutError />} />
           <Route path="/sobre-nosotros" element={<About />} />
+          <Route path="/metodos/v60" element={<V60 />} />
+          <Route path="/metodos/aeropress" element={<AeroPress />} />
+          <Route path="/metodos/espresso" element={<Espresso />} />
+          <Route path="/horeca" element={<Horeca />} />
           <Route path="/privacidad" element={<Privacy />} />
           <Route path="/terminos" element={<Terms />} />
+
+          {/* Redirects 301 desde rutas viejas en inglés (preservan SEO indexado) */}
+          <Route path="/shop" element={<Navigate to="/tienda" replace />} />
+          <Route path="/shop/:slug" element={<RedirectShopProduct />} />
+          <Route path="/cart" element={<Navigate to="/carrito" replace />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -68,6 +81,11 @@ export default function App() {
       {!isAdmin && <CookieBanner />}
     </div>
   );
+}
+
+function RedirectShopProduct() {
+  const { slug } = useParams();
+  return <Navigate to={`/cafe/${slug}`} replace />;
 }
 
 function NotFound() {

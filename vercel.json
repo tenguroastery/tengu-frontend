@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    { "source": "/shop", "destination": "/tienda", "permanent": true },
+    { "source": "/shop/:slug", "destination": "/cafe/:slug", "permanent": true },
+    { "source": "/cart", "destination": "/carrito", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/((?!api/|uploads/|.*\\..*).*)", "destination": "/index.html" }
+  ]
+}

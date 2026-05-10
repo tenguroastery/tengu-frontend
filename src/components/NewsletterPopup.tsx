@@ -2,18 +2,29 @@ import { useEffect, useState } from 'react';
 
 import NewsletterForm from './NewsletterForm';
 
-const STORAGE_KEY = 'tengu-newsletter-popup';
+const COOKIE_NAME = 'tengu_newsletter_dismissed';
+const COOKIE_DAYS = 14;
 /** Tiempo mínimo antes de poder mostrar el popup en mobile (ms). */
 const MIN_DWELL_MS = 30_000;
 /** % de scroll vertical mínimo en mobile para gatillar. */
 const SCROLL_THRESHOLD = 0.6;
+
+function setDismissCookie() {
+  const expires = new Date(Date.now() + COOKIE_DAYS * 24 * 60 * 60 * 1000);
+  document.cookie = `${COOKIE_NAME}=1; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+}
+
+function hasDismissCookie() {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split(';').some((c) => c.trim().startsWith(`${COOKIE_NAME}=`));
+}
 
 export default function NewsletterPopup() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (localStorage.getItem(STORAGE_KEY) === 'dismissed') return;
+    if (hasDismissCookie()) return;
 
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     const start = Date.now();
@@ -57,7 +68,7 @@ export default function NewsletterPopup() {
   }, []);
 
   const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'dismissed');
+    setDismissCookie();
     setVisible(false);
   };
 

@@ -1,21 +1,25 @@
 import { Link } from 'react-router-dom';
 
 import type { Product } from '../types';
-import { formatCLP } from '../lib/api';
+import { formatCLP, pricePerKg } from '../lib/api';
 
 export default function ProductCard({ product }: { product: Product }) {
-  const minPrice = Math.min(...product.variants.map((v) => v.price_clp));
+  const cheapest = product.variants.reduce(
+    (min, v) => (v.price_clp < min.price_clp ? v : min),
+    product.variants[0],
+  );
+  const perKg = pricePerKg(cheapest.price_clp, cheapest.size_g);
 
   return (
     <Link
-      to={`/shop/${product.slug}`}
+      to={`/cafe/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-tengu-cream">
         {product.image && (
           <img
             src={`/uploads/${product.image}`}
-            alt={`Bolsa de ${product.name}`}
+            alt={`Bolsa de ${product.name} — café de ${product.origin} tostado en Chile`}
             className="h-full w-full object-cover transition group-hover:scale-105"
             loading="lazy"
             decoding="async"
@@ -35,9 +39,12 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.tasting_notes.slice(0, 3).join(' · ')}
           </p>
         )}
-        <p className="mt-auto pt-2 text-sm font-semibold text-tengu-ink">
-          desde {formatCLP(minPrice)}
-        </p>
+        <div className="mt-auto flex items-baseline justify-between pt-2">
+          <p className="text-sm font-semibold text-tengu-ink">
+            desde {formatCLP(cheapest.price_clp)}
+          </p>
+          <p className="text-xs text-tengu-dark/50">{formatCLP(perKg)}/kg</p>
+        </div>
       </div>
     </Link>
   );
