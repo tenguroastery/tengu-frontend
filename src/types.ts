@@ -22,6 +22,8 @@ export type Product = {
   image: string | null;
   category: string;
   featured: boolean;
+  is_published: boolean;
+  description: string | null;
   variants: Variant[];
 };
 

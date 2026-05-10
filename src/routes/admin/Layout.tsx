@@ -46,7 +46,8 @@ export default function AdminLayout() {
           <NavLink to="/admin" end className={linkClass}>📊 Dashboard</NavLink>
           <NavLink to="/admin/products" className={linkClass}>☕ Productos</NavLink>
           <NavLink to="/admin/orders" className={linkClass}>📦 Pedidos</NavLink>
-          <NavLink to="/admin/subscriptions" className={linkClass}>📧 Suscriptores</NavLink>
+          <NavLink to="/admin/coffee-subscriptions" className={linkClass}>🔁 Suscripciones café</NavLink>
+          <NavLink to="/admin/subscriptions" className={linkClass}>✉️ Newsletter</NavLink>
         </nav>
         <div className="border-t border-white/10 p-4 text-xs">
           <p className="text-tengu-cream/60">Sesión</p>

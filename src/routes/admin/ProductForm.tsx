@@ -28,7 +28,13 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
   const [acidity, setAcidity] = useState(product?.acidity ?? '');
   const [tastingNotesCsv, setTastingNotesCsv] = useState((product?.tasting_notes ?? []).join(', '));
   const [category, setCategory] = useState(product?.category ?? 'Filtrado');
+  const [description, setDescription] = useState(product?.description ?? '');
   const [featured, setFeatured] = useState(product?.featured ?? false);
+  const [isPublished, setIsPublished] = useState(product?.is_published ?? true);
+  // 'cafe' muestra todos los campos de café. 'equipo' los oculta y usa una variante única.
+  const [productKind, setProductKind] = useState<'cafe' | 'equipo'>(
+    product && !product.roast_profile ? 'equipo' : 'cafe',
+  );
   const [variants, setVariants] = useState<{ size_g: number; price_clp: number; stock_qty: number }[]>(
     product?.variants.map((v) => ({ size_g: v.size_g, price_clp: v.price_clp, stock_qty: v.stock_qty })) ?? [
       { size_g: 250, price_clp: 12000, stock_qty: 50 },
@@ -80,22 +86,25 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
         .map((t: string) => t.trim())
         .filter(Boolean);
 
+      const isCoffee = productKind === 'cafe';
       const payload: ProductCreatePayload = {
         slug: slug.trim(),
         name: name.trim(),
         origin: origin.trim(),
         region: region.trim() || null,
-        variety: variety.trim() || null,
-        process: process.trim() || null,
-        altitude_masl: altitudeMasl.trim() || null,
-        harvest: harvest.trim() || null,
-        roast_profile: roastProfile,
-        producer: producer.trim() || null,
-        body: bodyTxt.trim() || null,
-        acidity: acidity.trim() || null,
-        tasting_notes,
+        variety: isCoffee ? (variety.trim() || null) : null,
+        process: isCoffee ? (process.trim() || null) : null,
+        altitude_masl: isCoffee ? (altitudeMasl.trim() || null) : null,
+        harvest: isCoffee ? (harvest.trim() || null) : null,
+        roast_profile: isCoffee ? roastProfile : '',
+        producer: isCoffee ? (producer.trim() || null) : null,
+        body: isCoffee ? (bodyTxt.trim() || null) : null,
+        acidity: isCoffee ? (acidity.trim() || null) : null,
+        tasting_notes: isCoffee ? tasting_notes : [],
         category: category.trim(),
         featured,
+        is_published: isPublished,
+        description: description.trim() || null,
         variants,
       };
 
@@ -118,6 +127,8 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
           tasting_notes: payload.tasting_notes,
           category: payload.category,
           featured: payload.featured,
+          is_published: payload.is_published,
+          description: payload.description,
         });
         // Variantes: solo agregar nuevas (no editar existentes, eso lo hace inline en la lista)
         const existingSizes = new Set(product.variants.map((v) => v.size_g));
@@ -148,6 +159,43 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+          {/* Tipo de producto */}
+          <div className="rounded-lg bg-tengu-cream/40 p-4">
+            <p className="text-xs uppercase tracking-wider text-tengu-dark/60">Tipo de producto</p>
+            <div className="mt-2 flex gap-3">
+              <label className={`flex-1 cursor-pointer rounded-md border p-3 text-center text-sm ${productKind === 'cafe' ? 'border-tengu-ink bg-white' : 'border-tengu-dark/15 bg-white/50'}`}>
+                <input type="radio" checked={productKind === 'cafe'} onChange={() => setProductKind('cafe')} className="sr-only" />
+                ☕ Café (todos los campos de origen)
+              </label>
+              <label className={`flex-1 cursor-pointer rounded-md border p-3 text-center text-sm ${productKind === 'equipo' ? 'border-tengu-ink bg-white' : 'border-tengu-dark/15 bg-white/50'}`}>
+                <input type="radio" checked={productKind === 'equipo'} onChange={() => setProductKind('equipo')} className="sr-only" />
+                🛠 Equipo / Taza / Otro (campos de café opcionales)
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-tengu-dark/60">
+              Si vendes una taza, un molinillo o equipo: usa "Equipo". Te oculta los campos específicos de café (variedad, proceso, altitud, etc.).
+            </p>
+          </div>
+
+          {/* Visibilidad */}
+          <div className="flex items-center gap-3 rounded-lg border border-tengu-dark/10 bg-white p-4">
+            <input
+              id="is-published"
+              type="checkbox"
+              checked={isPublished}
+              onChange={(e) => setIsPublished(e.target.checked)}
+              className="h-5 w-5 accent-tengu-ink"
+            />
+            <label htmlFor="is-published" className="flex-1 cursor-pointer">
+              <p className="text-sm font-semibold">
+                {isPublished ? '✓ Publicado en la tienda' : '⊘ Oculto en la tienda (solo admin lo ve)'}
+              </p>
+              <p className="text-xs text-tengu-dark/60">
+                Desactivar para borradores, productos descontinuados o testing. No se borra, solo se oculta.
+              </p>
+            </label>
+          </div>
+
           {/* Identidad */}
           <fieldset className="grid gap-4 sm:grid-cols-2">
             <legend className="col-span-full px-2 font-display text-sm uppercase tracking-wider text-tengu-dark/60">
@@ -174,16 +222,34 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className={input}
+                placeholder="ej: Filtrado, Espresso, Tazas, Equipo, Suscripción"
               />
               <datalist id="cat-list">
                 {categories.map((c) => <option key={c} value={c} />)}
               </datalist>
+              <p className="mt-1 text-xs text-tengu-dark/50">
+                Puedes escribir una categoría nueva — aparece automático en la tienda.
+                Existentes: {categories.join(', ') || '(ninguna aún)'}
+              </p>
             </Field>
-            <Field label="Perfil de tueste" required>
-              <select value={roastProfile} onChange={(e) => setRoastProfile(e.target.value)} className={input}>
-                {ROAST_PROFILES.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </Field>
+            {productKind === 'cafe' && (
+              <Field label="Perfil de tueste" required>
+                <select value={roastProfile} onChange={(e) => setRoastProfile(e.target.value)} className={input}>
+                  {ROAST_PROFILES.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </Field>
+            )}
+            <div className="col-span-full">
+              <Field label="Descripción corta (opcional, para productos no-café)">
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={2}
+                  placeholder="ej: Taza de cerámica artesanal 250ml. Apta para microondas."
+                  className={input}
+                />
+              </Field>
+            </div>
             <label className="col-span-full flex items-center gap-2">
               <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
               <span className="text-sm">Marcar como destacado (aparece en home)</span>
@@ -193,33 +259,43 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
           {/* Origen */}
           <fieldset className="grid gap-4 sm:grid-cols-2">
             <legend className="col-span-full px-2 font-display text-sm uppercase tracking-wider text-tengu-dark/60">
-              Origen
+              {productKind === 'cafe' ? 'Origen' : 'Procedencia / Marca'}
             </legend>
-            <Field label="País / Origen" required>
-              <input required value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Colombia" className={input} />
+            <Field label={productKind === 'cafe' ? 'País / Origen' : 'Marca / Procedencia'} required>
+              <input
+                required
+                value={origin}
+                onChange={(e) => setOrigin(e.target.value)}
+                placeholder={productKind === 'cafe' ? 'Colombia' : 'ej: Hario, Tengu, Importado'}
+                className={input}
+              />
             </Field>
-            <Field label="Región / Finca">
-              <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="Huila, Finca XX" className={input} />
+            <Field label={productKind === 'cafe' ? 'Región / Finca' : 'Línea / Modelo (opcional)'}>
+              <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder={productKind === 'cafe' ? 'Huila, Finca XX' : 'V60 02 cerámica'} className={input} />
             </Field>
-            <Field label="Productor">
-              <input value={producer} onChange={(e) => setProducer(e.target.value)} className={input} />
-            </Field>
-            <Field label="Variedad">
-              <input value={variety} onChange={(e) => setVariety(e.target.value)} placeholder="Caturra, Bourbon" className={input} />
-            </Field>
-            <Field label="Proceso">
-              <input value={process} onChange={(e) => setProcess(e.target.value)} placeholder="Lavado, Natural" className={input} />
-            </Field>
-            <Field label="Altitud (m.s.n.m.)">
-              <input value={altitudeMasl} onChange={(e) => setAltitudeMasl(e.target.value)} placeholder="1600-2100" className={input} />
-            </Field>
-            <Field label="Cosecha">
-              <input value={harvest} onChange={(e) => setHarvest(e.target.value)} placeholder="Sept-Nov 2025" className={input} />
-            </Field>
+            {productKind === 'cafe' && (
+              <>
+                <Field label="Productor">
+                  <input value={producer} onChange={(e) => setProducer(e.target.value)} className={input} />
+                </Field>
+                <Field label="Variedad">
+                  <input value={variety} onChange={(e) => setVariety(e.target.value)} placeholder="Caturra, Bourbon" className={input} />
+                </Field>
+                <Field label="Proceso">
+                  <input value={process} onChange={(e) => setProcess(e.target.value)} placeholder="Lavado, Natural" className={input} />
+                </Field>
+                <Field label="Altitud (m.s.n.m.)">
+                  <input value={altitudeMasl} onChange={(e) => setAltitudeMasl(e.target.value)} placeholder="1600-2100" className={input} />
+                </Field>
+                <Field label="Cosecha">
+                  <input value={harvest} onChange={(e) => setHarvest(e.target.value)} placeholder="Sept-Nov 2025" className={input} />
+                </Field>
+              </>
+            )}
           </fieldset>
 
-          {/* Perfil sensorial */}
-          <fieldset className="grid gap-4 sm:grid-cols-2">
+          {/* Perfil sensorial — solo café */}
+          {productKind === 'cafe' && <fieldset className="grid gap-4 sm:grid-cols-2">
             <legend className="col-span-full px-2 font-display text-sm uppercase tracking-wider text-tengu-dark/60">
               Perfil de cata
             </legend>
@@ -239,13 +315,18 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
                 />
               </Field>
             </div>
-          </fieldset>
+          </fieldset>}
 
           {/* Variantes */}
           <fieldset>
             <legend className="px-2 font-display text-sm uppercase tracking-wider text-tengu-dark/60">
-              Formatos y precios
+              {productKind === 'cafe' ? 'Formatos y precios' : 'Variantes / SKU y precios'}
             </legend>
+            {productKind === 'equipo' && (
+              <p className="mt-1 text-xs text-tengu-dark/60">
+                Para una taza o equipo: agrega una sola variante con tamaño 1 (significa "1 unidad") y el precio.
+              </p>
+            )}
             <table className="mt-2 w-full text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wider text-tengu-dark/60">

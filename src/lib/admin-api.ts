@@ -60,6 +60,8 @@ export type AdminProduct = {
   category: string;
   image: string | null;
   featured: boolean;
+  is_published: boolean;
+  description: string | null;
   variants: AdminVariant[];
 };
 
@@ -79,6 +81,8 @@ export type ProductCreatePayload = {
   tasting_notes: string[];
   category: string;
   featured: boolean;
+  is_published: boolean;
+  description?: string | null;
   variants: { size_g: number; price_clp: number; stock_qty: number }[];
 };
 
@@ -88,6 +92,35 @@ export type AdminSubscription = {
   id: number;
   email: string;
   created_at: string;
+};
+
+export type AdminCoffeeSubscription = {
+  id: number;
+  customer_email: string;
+  customer_name: string;
+  frequency_days: number;
+  product_slug: string | null;
+  size_g: number;
+  is_surprise: boolean;
+  discount_pct: number;
+  is_active: boolean;
+  next_charge_at: string | null;
+  last_charge_at: string | null;
+  orders_count: number;
+  first_order_id: number | null;
+  created_at: string;
+};
+
+export type CoffeeSubPatch = {
+  is_active?: boolean;
+  cancel_reason?: string;
+  admin_notes?: string;
+  next_charge_at?: string;
+};
+
+export type ProcessSubOut = {
+  subscription: AdminCoffeeSubscription;
+  order: Order;
 };
 
 export const adminApi = {
@@ -128,4 +161,14 @@ export const adminApi = {
 
   listSubscriptions: () => request<AdminSubscription[]>('/admin/subscriptions'),
   exportSubscriptionsCsvUrl: (jwt: string) => `${API_BASE}/admin/subscriptions/export.csv?_=${jwt.slice(0, 8)}`,
+
+  // Coffee subscriptions (recurring product delivery)
+  listCoffeeSubscriptions: () => request<AdminCoffeeSubscription[]>('/admin/coffee-subscriptions'),
+  updateCoffeeSubscription: (id: number, payload: CoffeeSubPatch) =>
+    request<AdminCoffeeSubscription>(`/admin/coffee-subscriptions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+  processCoffeeSubscription: (id: number) =>
+    request<ProcessSubOut>(`/admin/coffee-subscriptions/${id}/process`, { method: 'POST' }),
 };

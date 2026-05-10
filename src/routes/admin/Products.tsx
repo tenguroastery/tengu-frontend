@@ -154,7 +154,14 @@ export default function AdminProducts() {
 
                 <div>
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="font-display text-xl">{p.name}</h2>
+                    <h2 className="font-display text-xl">
+                      {p.name}
+                      {!p.is_published && (
+                        <span className="ml-2 rounded-full bg-tengu-dark/10 px-2 py-0.5 align-middle text-xs uppercase tracking-wider text-tengu-dark/60">
+                          Oculto
+                        </span>
+                      )}
+                    </h2>
                     <p className="text-xs uppercase tracking-wider text-tengu-mustard">
                       {p.origin} · {p.category} {p.featured && '· ⭐ destacado'}
                     </p>
