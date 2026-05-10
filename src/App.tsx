@@ -13,6 +13,7 @@ import Horeca from './routes/Horeca';
 import AeroPress from './routes/methods/AeroPress';
 import Espresso from './routes/methods/Espresso';
 import V60 from './routes/methods/V60';
+import Subscription from './routes/Subscription';
 import AdminDashboard from './routes/admin/Dashboard';
 import AdminLayout from './routes/admin/Layout';
 import AdminLogin from './routes/admin/Login';
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/metodos/aeropress" element={<AeroPress />} />
           <Route path="/metodos/espresso" element={<Espresso />} />
           <Route path="/horeca" element={<Horeca />} />
+          <Route path="/suscripcion" element={<Subscription />} />
           <Route path="/privacidad" element={<Privacy />} />
           <Route path="/terminos" element={<Terms />} />
 

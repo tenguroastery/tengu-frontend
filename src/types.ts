@@ -133,3 +133,27 @@ export type SubscriptionCreateResponse = {
   subscription: CoffeeSubscription;
   order: Order;
 };
+
+export type Review = {
+  id: number;
+  product_slug: string;
+  customer_name: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  created_at: string;
+};
+
+export type ReviewSummary = {
+  count: number;
+  average: number;
+};
+
+export type ReviewSubmit = {
+  product_slug: string;
+  customer_name: string;
+  customer_email: string;
+  rating: number;
+  title?: string;
+  body: string;
+};

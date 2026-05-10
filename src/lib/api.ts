@@ -4,6 +4,9 @@ import type {
   Order,
   OrderPayload,
   Product,
+  Review,
+  ReviewSubmit,
+  ReviewSummary,
   SubscriptionCreateResponse,
   SubscriptionPayload,
   WebpayInit,
@@ -60,6 +63,10 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   getSubscription: (id: number) => request<CoffeeSubscription>(`/subscriptions/${id}`),
+  listReviews: (productSlug: string) => request<Review[]>(`/reviews/${productSlug}`),
+  reviewSummary: (productSlug: string) => request<ReviewSummary>(`/reviews/${productSlug}/summary`),
+  submitReview: (payload: ReviewSubmit) =>
+    request<Review>('/reviews', { method: 'POST', body: JSON.stringify(payload) }),
 };
 
 export function formatCLP(value: number): string {
