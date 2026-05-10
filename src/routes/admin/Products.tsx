@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { adminApi, type AdminProduct, type AdminVariant } from '../../lib/admin-api';
 import { formatCLP } from '../../lib/api';
+import ProductForm from './ProductForm';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
@@ -9,6 +10,7 @@ export default function AdminProducts() {
   const [savingVariant, setSavingVariant] = useState<number | null>(null);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [formMode, setFormMode] = useState<null | 'create' | { mode: 'edit'; product: AdminProduct }>(null);
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const reload = () => {
@@ -53,17 +55,61 @@ export default function AdminProducts() {
     }
   };
 
+  const handleDeleteProduct = async (slug: string, name: string) => {
+    if (!confirm(`¿Eliminar el producto "${name}"? Esta acción no se puede deshacer.`)) return;
+    setError(null);
+    try {
+      await adminApi.deleteProduct(slug);
+      setProducts((prev) => prev.filter((p) => p.slug !== slug));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const handleDeleteVariant = async (variantId: number) => {
+    if (!confirm('¿Quitar este formato del producto?')) return;
+    setError(null);
+    try {
+      await adminApi.deleteVariant(variantId);
+      setProducts((prev) =>
+        prev.map((p) => ({ ...p, variants: p.variants.filter((v) => v.id !== variantId) })),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
   return (
     <div className="p-6 md:p-10">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl">Productos</h1>
           <p className="mt-1 text-sm text-tengu-dark/60">{products.length} cafés en catálogo</p>
         </div>
-        <button onClick={reload} className="text-xs uppercase tracking-wider text-tengu-ink hover:underline">
-          ↻ Recargar
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={reload} className="text-xs uppercase tracking-wider text-tengu-ink hover:underline">
+            ↻ Recargar
+          </button>
+          <button
+            onClick={() => setFormMode('create')}
+            className="rounded-md bg-tengu-mustard px-4 py-2 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
+          >
+            + Nuevo producto
+          </button>
+        </div>
       </header>
+
+      {formMode && (
+        <ProductForm
+          mode={formMode === 'create' ? 'create' : 'edit'}
+          product={formMode !== 'create' ? formMode.product : undefined}
+          onClose={() => setFormMode(null)}
+          onSaved={() => {
+            setFormMode(null);
+            reload();
+          }}
+        />
+      )}
 
       {error && (
         <div className="mt-4 rounded-md border border-tengu-coral/30 bg-tengu-coral/10 p-3 text-sm text-tengu-coral">
@@ -115,12 +161,28 @@ export default function AdminProducts() {
                   </div>
                   <p className="mt-1 text-xs text-tengu-dark/50">slug: <code>{p.slug}</code></p>
 
+                  <div className="mt-2 flex gap-3 text-xs">
+                    <button
+                      onClick={() => setFormMode({ mode: 'edit', product: p })}
+                      className="uppercase tracking-wider text-tengu-ink hover:underline"
+                    >
+                      Editar metadata
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(p.slug, p.name)}
+                      className="uppercase tracking-wider text-tengu-coral hover:underline"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+
                   <table className="mt-4 w-full text-sm">
                     <thead>
                       <tr className="border-b border-tengu-dark/10 text-left text-xs uppercase tracking-wider text-tengu-dark/60">
                         <th className="py-2">Formato</th>
                         <th className="py-2">Precio CLP</th>
                         <th className="py-2">Stock</th>
+                        <th />
                       </tr>
                     </thead>
                     <tbody>
@@ -130,6 +192,8 @@ export default function AdminProducts() {
                           variant={v}
                           saving={savingVariant === v.id}
                           onUpdate={(field, value) => handleVariantUpdate(v, field, value)}
+                          onDelete={() => handleDeleteVariant(v.id)}
+                          canDelete={p.variants.length > 1}
                         />
                       ))}
                     </tbody>
@@ -148,10 +212,14 @@ function VariantRow({
   variant,
   saving,
   onUpdate,
+  onDelete,
+  canDelete,
 }: {
   variant: AdminVariant;
   saving: boolean;
   onUpdate: (field: 'price_clp' | 'stock_qty', value: number) => void;
+  onDelete: () => void;
+  canDelete: boolean;
 }) {
   const [price, setPrice] = useState(variant.price_clp);
   const [stock, setStock] = useState(variant.stock_qty);
@@ -202,6 +270,17 @@ function VariantRow({
           <span className="text-xs text-tengu-dark/50">u.</span>
           {saving && <span className="text-xs text-tengu-mustard">guardando…</span>}
         </div>
+      </td>
+      <td className="py-2 text-right">
+        {canDelete && (
+          <button
+            onClick={onDelete}
+            className="text-xs uppercase tracking-wider text-tengu-coral/70 hover:text-tengu-coral"
+            aria-label="Quitar formato"
+          >
+            ✕
+          </button>
+        )}
       </td>
     </tr>
   );

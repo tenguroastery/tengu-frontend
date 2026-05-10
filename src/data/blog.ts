@@ -16,6 +16,135 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: 'proceso-natural-anaerobico',
+    title: 'Proceso natural anaeróbico: qué es y por qué cambia el sabor',
+    excerpt:
+      'Es el proceso que está revolucionando la cata del café especial. Te explicamos qué pasa dentro de esa bolsa sellada y por qué importa.',
+    metaDescription:
+      'Qué es el proceso natural anaeróbico en café y cómo afecta dulzor, frutas y acidez. Caso real con Marie Gorette Rwanda.',
+    cover: '/uploads/rwanda-marie-gorette-natural.jpg',
+    publishedAt: '2026-06-07',
+    readingMinutes: 6,
+    author: 'Equipo Tengu',
+    tags: ['Proceso', 'Educación'],
+    body: `## Primero: qué es el proceso natural a secas
+
+Cuando recoges una cereza de café, dentro tiene 2 semillas. Para llegar al grano que tuesta, hay que separarlas del fruto. Eso se llama "proceso", y hay varias formas:
+
+- **Lavado**: se quita la pulpa con agua y se seca solo la semilla. Da cafés limpios y brillantes.
+- **Natural**: se seca la cereza entera al sol durante semanas. La fruta fermenta sobre la semilla y le transfiere dulzor y notas frutales. Da cafés más complejos pero más caprichosos.
+- **Honey**: intermedio. Quitas la piel pero dejas el mucílago (la "miel") al secado.
+
+## Ahora la versión "anaeróbica"
+
+**Anaeróbico** quiere decir: sin oxígeno. En lugar de dejar las cerezas secarse al aire, se meten en tanques o bolsas selladas durante 24-100+ horas. Como no hay oxígeno, las bacterias presentes hacen una fermentación distinta — más controlada, más larga, y con resultados muy diferentes en taza.
+
+Lo que provoca este proceso anaeróbico:
+
+- **Dulzor más profundo**: notas a melaza, panela, miel.
+- **Aromas raros (en el buen sentido)**: cerezas maduras, flor de jamaica, especias.
+- **Cuerpo más jugoso**: la taza se siente como masticable.
+- **Acidez transformada**: a veces málica, a veces brillante como cítrico maduro.
+
+## El caso Marie Gorette Rwanda Natural
+
+Nuestro [Rwanda Natural](/cafe/rwanda-natural) lleva exactamente este proceso. Marie Gorette Mukamurenzi, productora de Bourbon Rojo en el sur de Rwanda, mete las cerezas en sacos sellados durante ~36 horas antes del secado al sol. Resultado: frutos rojos brillantes, chocolate con leche y mandarina.
+
+Si lo comparas con un Rwanda lavado convencional, vas a notar:
+1. Más fruta evidente en la taza
+2. Cuerpo más denso
+3. Final más largo
+
+Es la diferencia entre "café rico" y "café que recuerdas".
+
+## ¿Es para todos?
+
+Honestamente, **no**. Los anaeróbicos son más caros (proceso largo + más riesgo para el productor), pueden ser intensos para quien viene de café industrial, y exigen buena preparación para no perder lo que ofrecen.
+
+Si nunca probaste café de especialidad, **empieza por un lavado** — más limpio, más predecible. Cuando ya tienes referencia, los anaeróbicos se vuelven una experiencia distinta.
+
+## Cómo prepararlos
+
+- **Filtrado** (V60, AeroPress): aprovechas mejor toda la complejidad. **Recomendado.**
+- **Espresso**: funciona, pero la presión y la temperatura concentran tanto que puede saturar. Receta más conservadora (18g / 36g / 27s).
+- **Prensa francesa**: queda muy bien, el cuerpo se acentúa.
+
+[Cómo preparar V60 paso a paso →](/metodos/v60)
+
+## El detalle bonito
+
+Tu café no llegó por accidente. Esa nota frutal que disfrutas la decidió un productor que se la jugó con un proceso que podía salir muy bien o muy mal. Cuando la taza sale como debe, es resultado de un trabajo invisible pero real.`,
+  },
+  {
+    slug: 'tueste-claro-vs-oscuro',
+    title: 'Tueste claro, medio y oscuro: cómo afectan tu taza',
+    excerpt:
+      'Tres niveles, tres tazas completamente distintas. La química detrás de por qué tu café sabe ácido, dulce o amargo.',
+    metaDescription:
+      'Qué pasa durante el tueste y cómo elegir el perfil correcto según tu método de preparación. Guía Tengu Roastery.',
+    cover: '/uploads/tengu-espresso-blend.jpg',
+    publishedAt: '2026-06-14',
+    readingMinutes: 5,
+    author: 'Equipo Tengu',
+    tags: ['Tueste', 'Educación'],
+    body: `## Qué pasa cuando se tuesta café
+
+El café verde (sin tostar) no se puede consumir como bebida — es duro, sabe a maní crudo y huele a césped. El tueste lo transforma vía calor (190-240°C) en algo aromático, bebible y rico.
+
+Durante ese proceso, el grano:
+- **Pierde agua y peso** (~15-20%)
+- **Crece de tamaño** (~50%)
+- **Cambia de color** (verde → amarillo → marrón claro → marrón oscuro)
+- **Genera CO2 y compuestos aromáticos** (Maillard, caramelización)
+- **Se rompe ("first crack")**: chasquido audible, marca el inicio del tueste utilizable
+
+Después del primer crack hay una ventana de 1-3 minutos donde se decide TODO el carácter del café.
+
+## Las 3 grandes zonas
+
+### Tueste claro (light roast)
+- Termina apenas después del first crack
+- Color marrón claro (canela), sin aceite visible
+- **Carácter**: acidez alta y definida (cítrica, frutal, floral), cuerpo ligero, dulzor cristalino
+- **Bueno**: te muestra todo lo que el origen, varietal y proceso aportaron
+- **Malo**: si el café verde es malo, no hay tueste claro que lo esconda
+
+### Tueste medio (medium roast)
+- Termina entre first y segundo crack
+- Color marrón uniforme, casi sin aceite
+- **Carácter**: balance acidez-dulzor, caramelo y chocolate con leche, cuerpo medio
+- **Bueno**: versátil para casi todos los métodos
+- **Malo**: puede ser "aburrido" si vienes de cafés muy específicos
+
+### Tueste oscuro (dark roast)
+- Llega al segundo crack o más allá
+- Color marrón oscuro a casi negro, con aceite visible en la superficie
+- **Carácter**: amargor pronunciado, cuerpo pesado, ahumado y chocolate amargo. La acidez desaparece.
+- **Bueno**: consistente, perdona en preparación
+- **Malo**: tapa los matices del origen — todos los cafés oscuros saben parecido
+
+## Cuál elegir según método
+
+| Método | Recomendado |
+|--------|-------------|
+| V60, AeroPress, Chemex | **Claro** o medio-claro |
+| French press | Medio |
+| Espresso italiano tradicional | Medio-oscuro |
+| Espresso de especialidad | **Medio** |
+| Moka | Medio |
+| Café americano de filtro | Medio |
+
+## Cómo lo hacemos en Tengu
+
+Para nuestros cafés de **filtrado** usamos perfil **claro a medio**: respetan la acidez y notas del productor. Para nuestros **espresso blends** (Tengu Espresso Beam y Blend) usamos perfil **medio**: cuerpo cremoso y dulzor sin perder complejidad, sin llegar al "tueste italiano" tradicional.
+
+Lo que NO vas a encontrar en Tengu: tueste oscuro de pizza-shop. No es nuestra filosofía.
+
+## Conclusión
+
+Si nunca probaste tueste claro y siempre tomaste oscuro, te recomendamos probar un single origin filtrado claro: [Marie Gorette Rwanda](/cafe/rwanda-natural) o [Colombia Corazón](/cafe/colombia-corazon). Va a sonarte raro al principio. Después de 3 tazas, no vuelves al oscuro.`,
+  },
+  {
     slug: 'cafe-para-espresso-en-casa',
     title: 'Café para espresso en casa: 5 opciones que funcionan',
     excerpt:

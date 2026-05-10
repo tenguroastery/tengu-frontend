@@ -5,19 +5,16 @@ import { api } from '../lib/api';
 import { useSeo } from '../lib/seo';
 import type { Product } from '../types';
 
-const CATEGORIES = ['Todos', 'Filtrado', 'Espresso'] as const;
-type Category = (typeof CATEGORIES)[number];
-
 export default function Shop() {
   useSeo({
     title: 'Tienda de café de especialidad',
     description:
-      'Catálogo Tengu Roastery: 8 cafés de origen único, perfiles para filtrado y espresso. Despacho 24-48h en todo Chile.',
+      'Catálogo Tengu Roastery: cafés de origen único, perfiles para filtrado y espresso. Despacho 24-48h en todo Chile.',
     canonical: '/tienda',
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState<Category>('Todos');
+  const [category, setCategory] = useState<string>('Todos');
 
   useEffect(() => {
     api.listProducts()
@@ -25,6 +22,12 @@ export default function Shop() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  // Categorías dinámicas derivadas del catálogo
+  const categories = useMemo(() => {
+    const set = new Set(products.map((p) => p.category).filter(Boolean));
+    return ['Todos', ...[...set].sort()];
+  }, [products]);
 
   const filtered = useMemo(
     () => (category === 'Todos' ? products : products.filter((p) => p.category === category)),
@@ -38,21 +41,23 @@ export default function Shop() {
         {products.length} variedades de origen único y blends.
       </p>
 
-      <div className="mt-8 flex flex-wrap gap-2">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={`rounded-full px-4 py-2 text-sm uppercase tracking-wider transition ${
-              category === cat
-                ? 'bg-tengu-ink text-white'
-                : 'bg-white text-tengu-dark/70 hover:bg-tengu-ink/10'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {categories.length > 1 && (
+        <div className="mt-8 flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`rounded-full px-4 py-2 text-sm uppercase tracking-wider transition ${
+                category === cat
+                  ? 'bg-tengu-ink text-white'
+                  : 'bg-white text-tengu-dark/70 hover:bg-tengu-ink/10'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-10">
         {loading ? (

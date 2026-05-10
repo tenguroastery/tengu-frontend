@@ -47,12 +47,42 @@ export type AdminProduct = {
   slug: string;
   name: string;
   origin: string;
-  category: string;
+  region: string | null;
+  variety: string | null;
+  process: string | null;
+  altitude_masl: string | null;
+  harvest: string | null;
   roast_profile: string;
+  producer: string | null;
+  body: string | null;
+  acidity: string | null;
+  tasting_notes: string[];
+  category: string;
   image: string | null;
   featured: boolean;
   variants: AdminVariant[];
 };
+
+export type ProductCreatePayload = {
+  slug: string;
+  name: string;
+  origin: string;
+  region?: string | null;
+  variety?: string | null;
+  process?: string | null;
+  altitude_masl?: string | null;
+  harvest?: string | null;
+  roast_profile: string;
+  producer?: string | null;
+  body?: string | null;
+  acidity?: string | null;
+  tasting_notes: string[];
+  category: string;
+  featured: boolean;
+  variants: { size_g: number; price_clp: number; stock_qty: number }[];
+};
+
+export type ProductPatchPayload = Partial<Omit<ProductCreatePayload, 'slug' | 'variants'>>;
 
 export type AdminSubscription = {
   id: number;
@@ -69,11 +99,22 @@ export const adminApi = {
   me: () => request<{ email: string }>('/admin/me'),
 
   listProducts: () => request<AdminProduct[]>('/admin/products'),
+  listCategories: () => request<string[]>('/admin/products/categories'),
+  createProduct: (payload: ProductCreatePayload) =>
+    request<AdminProduct>('/admin/products', { method: 'POST', body: JSON.stringify(payload) }),
+  updateProduct: (slug: string, payload: ProductPatchPayload) =>
+    request<AdminProduct>(`/admin/products/${slug}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteProduct: (slug: string) =>
+    request<void>(`/admin/products/${slug}`, { method: 'DELETE' }),
   updateVariant: (id: number, payload: { price_clp?: number; stock_qty?: number }) =>
     request<AdminVariant>(`/admin/products/variants/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
     }),
+  addVariant: (slug: string, payload: { size_g: number; price_clp: number; stock_qty: number }) =>
+    request<AdminVariant>(`/admin/products/${slug}/variants`, { method: 'POST', body: JSON.stringify(payload) }),
+  deleteVariant: (variantId: number) =>
+    request<void>(`/admin/products/variants/${variantId}`, { method: 'DELETE' }),
   uploadProductImage: (slug: string, file: File) => {
     const fd = new FormData();
     fd.append('file', file);
