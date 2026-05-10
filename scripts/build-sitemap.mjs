@@ -28,11 +28,17 @@ const STATIC_ROUTES = [
   { path: '/metodos/aeropress', priority: '0.6' },
   { path: '/metodos/espresso', priority: '0.6' },
   { path: '/horeca', priority: '0.7' },
+  { path: '/suscripcion', priority: '0.8', changefreq: 'monthly' },
   { path: '/privacidad', priority: '0.3' },
   { path: '/terminos', priority: '0.3' },
 ];
 
-const BLOG_SLUGS = ['como-elegir-cafe-de-especialidad-chile'];
+const BLOG_SLUGS = [
+  'como-elegir-cafe-de-especialidad-chile',
+  'cafe-para-espresso-en-casa',
+  'cafe-para-v60',
+  'mejor-cafe-en-grano-chile',
+];
 
 async function fetchProducts() {
   try {

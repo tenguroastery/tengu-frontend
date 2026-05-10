@@ -1,4 +1,13 @@
-import type { KhipuInit, Order, OrderPayload, Product, WebpayInit } from '../types';
+import type {
+  CoffeeSubscription,
+  KhipuInit,
+  Order,
+  OrderPayload,
+  Product,
+  SubscriptionCreateResponse,
+  SubscriptionPayload,
+  WebpayInit,
+} from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
@@ -45,6 +54,12 @@ export const api = {
     request<{ order_status: string; khipu_status: string }>(`/checkout/khipu/verify/${orderId}`, {
       method: 'POST',
     }),
+  createSubscription: (payload: SubscriptionPayload) =>
+    request<SubscriptionCreateResponse>('/subscriptions', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  getSubscription: (id: number) => request<CoffeeSubscription>(`/subscriptions/${id}`),
 };
 
 export function formatCLP(value: number): string {

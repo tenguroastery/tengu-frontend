@@ -95,3 +95,41 @@ export type KhipuInit = {
   payment_url: string;
   simplified_transfer_url: string | null;
 };
+
+export type SubscriptionPayload = {
+  customer_email: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_rut: string;
+  shipping_method: ShippingMethod;
+  shipping_address?: string;
+  shipping_comuna?: string;
+  shipping_region?: string;
+  shipping_notes?: string;
+  frequency_days: 30 | 60 | 90;
+  product_slug: string | null;
+  size_g: number;
+  is_surprise: boolean;
+};
+
+export type CoffeeSubscription = {
+  id: number;
+  customer_email: string;
+  customer_name: string;
+  frequency_days: number;
+  product_slug: string | null;
+  size_g: number;
+  is_surprise: boolean;
+  discount_pct: number;
+  is_active: boolean;
+  next_charge_at: string | null;
+  last_charge_at: string | null;
+  orders_count: number;
+  first_order_id: number | null;
+  created_at: string;
+};
+
+export type SubscriptionCreateResponse = {
+  subscription: CoffeeSubscription;
+  order: Order;
+};
