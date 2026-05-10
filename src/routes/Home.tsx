@@ -87,14 +87,28 @@ export default function Home() {
 
   return (
     <>
-      {/* HERO — minimal, foto a la derecha, una sola CTA */}
+      {/* HERO — escena tostador como bg + bag a la derecha */}
       <section className="relative isolate overflow-hidden bg-tengu-dark text-tengu-cream">
-        <div
-          className="absolute inset-0 -z-10 bg-cover bg-center opacity-40"
-          style={{ backgroundImage: "url('/hero.jpg')" }}
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-tengu-dark via-tengu-dark/80 to-transparent" aria-hidden="true" />
+        <picture aria-hidden="true" className="absolute inset-0 -z-10">
+          <source
+            type="image/webp"
+            srcSet="/hero-bg-768w.webp 768w, /hero-bg-1280w.webp 1280w, /hero-bg.webp 1920w"
+            sizes="100vw"
+          />
+          <img
+            src="/hero-bg.jpg"
+            srcSet="/hero-bg-768w.jpg 768w, /hero-bg-1280w.jpg 1280w, /hero-bg.jpg 1920w"
+            sizes="100vw"
+            alt=""
+            className="h-full w-full object-cover opacity-55"
+            width={1920}
+            height={1080}
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-tengu-dark via-tengu-dark/85 to-tengu-dark/40" aria-hidden="true" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-tengu-dark/90 to-transparent" aria-hidden="true" />
 
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-24 md:grid-cols-2 md:items-center md:py-36">
           <div className="relative">
@@ -118,17 +132,26 @@ export default function Home() {
           </div>
 
           <div className="relative hidden md:block">
-            <div className="absolute -right-10 top-10 h-72 w-72 rounded-full bg-tengu-mustard/15 blur-3xl" aria-hidden="true" />
+            <div className="absolute -right-10 top-10 h-72 w-72 rounded-full bg-tengu-mustard/20 blur-3xl" aria-hidden="true" />
             <div className="relative ml-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
-              <img
-                src="/uploads/rwanda-marie-gorette-natural.jpg"
-                alt="Bolsa de Marie Gorette Mukamurenzi — Rwanda Natural"
-                className="h-full w-full object-cover"
-                width={400}
-                height={533}
-                fetchPriority="high"
-                decoding="async"
-              />
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/hero-bag-480w.webp 480w, /hero-bag.webp 800w"
+                  sizes="(max-width: 768px) 80vw, 400px"
+                />
+                <img
+                  src="/hero-bag.jpg"
+                  srcSet="/hero-bag-480w.jpg 480w, /hero-bag.jpg 800w"
+                  sizes="(max-width: 768px) 80vw, 400px"
+                  alt="Bolsa de Marie Gorette Mukamurenzi — Rwanda Natural · Tengu Roastery"
+                  className="h-full w-full object-cover"
+                  width={400}
+                  height={533}
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
             </div>
           </div>
         </div>
