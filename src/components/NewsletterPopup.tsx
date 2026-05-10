@@ -63,7 +63,7 @@ export default function NewsletterPopup() {
 
           <div className="hidden bg-tengu-ink/30 sm:block">
             <img
-              src="/product-images/rwanda-marie-gorette-natural.jpg"
+              src="/uploads/rwanda-marie-gorette-natural.jpg"
               alt=""
               className="h-full w-40 object-cover opacity-90"
             />

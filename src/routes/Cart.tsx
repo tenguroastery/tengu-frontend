@@ -39,7 +39,7 @@ export default function Cart() {
               <Link to={`/shop/${item.productSlug}`} className="flex-shrink-0">
                 {item.productImage && (
                   <img
-                    src={`/product-images/${item.productImage}`}
+                    src={`/uploads/${item.productImage}`}
                     alt={item.productName}
                     className="h-24 w-20 rounded-md object-cover"
                   />

@@ -27,7 +27,7 @@ export type Product = {
 
 export type ShippingMethod = 'rm' | 'regiones' | 'pickup';
 
-export type OrderStatus = 'pending' | 'paid' | 'failed' | 'canceled';
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'failed' | 'canceled';
 
 export type OrderItemPayload = {
   product_slug: string;
@@ -74,8 +74,11 @@ export type Order = {
   subtotal_clp: number;
   total_clp: number;
   webpay_authorization_code: string | null;
+  admin_notes: string | null;
+  tracking_code: string | null;
   created_at: string;
   paid_at: string | null;
+  shipped_at: string | null;
   items: OrderItem[];
 };
 

@@ -14,7 +14,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="relative aspect-[3/4] overflow-hidden bg-tengu-cream">
         {product.image && (
           <img
-            src={`/product-images/${product.image}`}
+            src={`/uploads/${product.image}`}
             alt={product.name}
             className="h-full w-full object-cover transition group-hover:scale-105"
             loading="lazy"

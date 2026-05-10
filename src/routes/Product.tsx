@@ -30,7 +30,7 @@ export default function Product() {
           '@type': 'Product',
           name: p.name,
           description: `Café de especialidad ${p.origin} — ${p.tasting_notes.join(', ')}.`,
-          image: p.image ? `https://tenguroastery.cl/product-images/${p.image}` : undefined,
+          image: p.image ? `https://tenguroastery.cl/uploads/${p.image}` : undefined,
           sku: p.slug,
           brand: { '@type': 'Brand', name: 'Tengu Roastery' },
           category: p.category,
@@ -57,7 +57,7 @@ export default function Product() {
       ? `${product.origin} · ${product.process ?? ''} · Notas: ${product.tasting_notes.join(', ')}.`
       : 'Café de especialidad chileno.',
     canonical: `/shop/${slug}`,
-    image: product?.image ? `/product-images/${product.image}` : undefined,
+    image: product?.image ? `/uploads/${product.image}` : undefined,
     type: 'product',
   });
 
@@ -98,7 +98,7 @@ export default function Product() {
         <div className="aspect-[3/4] overflow-hidden rounded-lg bg-white">
           {product.image && (
             <img
-              src={`/product-images/${product.image}`}
+              src={`/uploads/${product.image}`}
               alt={product.name}
               className="h-full w-full object-cover"
             />

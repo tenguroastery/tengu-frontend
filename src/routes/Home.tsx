@@ -121,7 +121,7 @@ export default function Home() {
             <div className="absolute -right-10 top-10 h-72 w-72 rounded-full bg-tengu-mustard/15 blur-3xl" aria-hidden="true" />
             <div className="relative ml-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
               <img
-                src="/product-images/rwanda-marie-gorette-natural.jpg"
+                src="/uploads/rwanda-marie-gorette-natural.jpg"
                 alt="Bolsa de Marie Gorette Mukamurenzi — Rwanda Natural"
                 className="h-full w-full object-cover"
               />
@@ -147,7 +147,7 @@ export default function Home() {
             <article key={story.code} className="group relative overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
               <div className="aspect-[4/5] overflow-hidden bg-tengu-cream">
                 <img
-                  src={`/product-images/${story.image}`}
+                  src={`/uploads/${story.image}`}
                   alt={`Café de ${story.name}`}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   loading="lazy"
