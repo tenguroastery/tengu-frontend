@@ -61,13 +61,11 @@ export type AdminSubscription = {
 };
 
 export const adminApi = {
-  loginRequest: (email: string) =>
-    request<void>('/admin/login/request', { method: 'POST', body: JSON.stringify({ email }) }),
-  loginVerify: (token: string) =>
-    request<{ jwt: string; email: string; expires_in_hours: number }>(
-      '/admin/login/verify',
-      { method: 'POST', body: JSON.stringify({ token }) },
-    ),
+  login: (email: string, password: string) =>
+    request<{ jwt: string; email: string; expires_in_hours: number }>('/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
   me: () => request<{ email: string }>('/admin/me'),
 
   listProducts: () => request<AdminProduct[]>('/admin/products'),

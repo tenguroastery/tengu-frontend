@@ -35,6 +35,8 @@ export default function Footer() {
             <li><Link to="/metodos/aeropress" className="hover:text-tengu-mustard">AeroPress</Link></li>
             <li><Link to="/metodos/espresso" className="hover:text-tengu-mustard">Espresso</Link></li>
             <li><Link to="/horeca" className="hover:text-tengu-mustard">Para tu negocio (Horeca)</Link></li>
+            <li><Link to="/blog" className="hover:text-tengu-mustard">Blog</Link></li>
+            <li><Link to="/sobre-nosotros" className="hover:text-tengu-mustard">Sobre nosotros</Link></li>
           </ul>
         </div>
 

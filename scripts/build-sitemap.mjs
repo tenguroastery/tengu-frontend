@@ -22,6 +22,7 @@ const SEED_FALLBACK = resolve(ROOT, '..', 'backend', 'seed', 'products.json');
 const STATIC_ROUTES = [
   { path: '/', priority: '1.0', changefreq: 'weekly' },
   { path: '/tienda', priority: '0.9', changefreq: 'weekly' },
+  { path: '/blog', priority: '0.8', changefreq: 'weekly' },
   { path: '/sobre-nosotros', priority: '0.7' },
   { path: '/metodos/v60', priority: '0.6' },
   { path: '/metodos/aeropress', priority: '0.6' },
@@ -30,6 +31,8 @@ const STATIC_ROUTES = [
   { path: '/privacidad', priority: '0.3' },
   { path: '/terminos', priority: '0.3' },
 ];
+
+const BLOG_SLUGS = ['como-elegir-cafe-de-especialidad-chile'];
 
 async function fetchProducts() {
   try {
@@ -62,6 +65,7 @@ function urlEntry(path, { priority = '0.5', changefreq, lastmod } = {}) {
   const entries = [
     ...STATIC_ROUTES.map((r) => urlEntry(r.path, { ...r, lastmod: today })),
     ...products.map((p) => urlEntry(`/cafe/${p.slug}`, { priority: '0.8', changefreq: 'monthly', lastmod: today })),
+    ...BLOG_SLUGS.map((slug) => urlEntry(`/blog/${slug}`, { priority: '0.7', changefreq: 'monthly', lastmod: today })),
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

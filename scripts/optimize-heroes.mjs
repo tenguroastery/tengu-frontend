@@ -17,8 +17,8 @@ const PUBLIC = resolve(__dirname, '..', 'public');
 
 const HEROES = [
   { src: 'hero-bg.png', widths: [1920, 1280, 768], jpgQ: 78, webpQ: 75 },
-  { src: 'hero-bag.png', widths: [800, 480], jpgQ: 85, webpQ: 80 },
-  { src: 'hero-atmosphere.png', widths: [1280, 768], jpgQ: 75, webpQ: 72 },
+  { src: 'hero-bag.png', widths: [1920, 1280, 768, 480], jpgQ: 82, webpQ: 78 },
+  { src: 'hero-atmosphere.png', widths: [1920, 1280, 768], jpgQ: 75, webpQ: 72 },
 ];
 
 async function fileSize(p) {

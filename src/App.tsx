@@ -7,6 +7,8 @@ import Header from './components/Header';
 import NewsletterPopup from './components/NewsletterPopup';
 import WhatsAppFab from './components/WhatsAppFab';
 import About from './routes/About';
+import BlogList from './routes/blog/BlogList';
+import BlogPost from './routes/blog/BlogPost';
 import Horeca from './routes/Horeca';
 import AeroPress from './routes/methods/AeroPress';
 import Espresso from './routes/methods/Espresso';
@@ -50,6 +52,8 @@ export default function App() {
           <Route path="/thanks/:orderId" element={<Thanks />} />
           <Route path="/checkout/error" element={<CheckoutError />} />
           <Route path="/sobre-nosotros" element={<About />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/metodos/v60" element={<V60 />} />
           <Route path="/metodos/aeropress" element={<AeroPress />} />
           <Route path="/metodos/espresso" element={<Espresso />} />

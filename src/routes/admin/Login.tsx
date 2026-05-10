@@ -1,19 +1,30 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { adminApi } from '../../lib/admin-api';
+import { useAdmin } from '../../store/admin';
 
 export default function AdminLogin() {
+  const [params] = useSearchParams();
+  const next = params.get('next') ?? '/admin';
+  const navigate = useNavigate();
+  const setSession = useAdmin((s) => s.setSession);
+
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError(null);
     try {
-      await adminApi.loginRequest(email.trim());
-      setSent(true);
+      const res = await adminApi.login(email.trim(), password);
+      setSession(res.jwt, res.email);
+      navigate(next, { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No pudimos iniciar sesión');
     } finally {
       setSubmitting(false);
     }
@@ -27,53 +38,49 @@ export default function AdminLogin() {
           <span className="font-display tracking-wider">TENGU · ADMIN</span>
         </Link>
 
-        {sent ? (
-          <div className="mt-10 text-center">
-            <p className="text-4xl">✉️</p>
-            <h1 className="mt-3 font-display text-2xl">Revisa tu correo</h1>
-            <p className="mt-3 text-sm text-tengu-cream/70">
-              Si tu email está autorizado, recibirás un link de acceso. Es válido por 15 minutos y
-              de un solo uso.
+        <form onSubmit={handleSubmit} className="mt-10">
+          <h1 className="font-display text-2xl">Iniciar sesión</h1>
+          <p className="mt-2 text-sm text-tengu-cream/70">Acceso interno de Tengu Roastery.</p>
+
+          <label className="mt-6 block">
+            <span className="block text-xs uppercase tracking-wider text-tengu-cream/60">Email</span>
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-2 w-full rounded-md border border-white/10 bg-tengu-dark/80 px-4 py-3 text-tengu-cream focus:border-tengu-mustard focus:outline-none"
+              placeholder="tu@correo.cl"
+            />
+          </label>
+
+          <label className="mt-4 block">
+            <span className="block text-xs uppercase tracking-wider text-tengu-cream/60">Contraseña</span>
+            <input
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-2 w-full rounded-md border border-white/10 bg-tengu-dark/80 px-4 py-3 text-tengu-cream focus:border-tengu-mustard focus:outline-none"
+            />
+          </label>
+
+          {error && (
+            <p className="mt-4 rounded-md border border-tengu-coral/30 bg-tengu-coral/10 p-3 text-sm text-tengu-coral">
+              {error}
             </p>
-            <button
-              onClick={() => setSent(false)}
-              className="mt-6 text-xs uppercase tracking-wider text-tengu-mustard hover:underline"
-            >
-              Enviar a otro correo
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-10">
-            <h1 className="font-display text-2xl">Iniciar sesión</h1>
-            <p className="mt-2 text-sm text-tengu-cream/70">
-              Te enviamos un link mágico al correo. Sin contraseñas.
-            </p>
-            <label className="mt-6 block">
-              <span className="block text-xs uppercase tracking-wider text-tengu-cream/60">
-                Email
-              </span>
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 w-full rounded-md border border-white/10 bg-tengu-dark/80 px-4 py-3 text-tengu-cream focus:border-tengu-mustard focus:outline-none"
-                placeholder="tu@correo.cl"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="mt-6 w-full rounded-md bg-tengu-mustard px-5 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-cream disabled:opacity-50"
-            >
-              {submitting ? 'Enviando…' : 'Enviarme el link'}
-            </button>
-            <p className="mt-6 text-center text-xs text-tengu-cream/40">
-              Solo emails autorizados pueden entrar.
-            </p>
-          </form>
-        )}
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-6 w-full rounded-md bg-tengu-mustard px-5 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-cream disabled:opacity-50"
+          >
+            {submitting ? 'Entrando…' : 'Entrar'}
+          </button>
+        </form>
       </div>
     </div>
   );
