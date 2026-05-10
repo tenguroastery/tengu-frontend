@@ -21,6 +21,7 @@ export default function Header() {
         <nav className="flex items-center gap-5 sm:gap-7">
           <NavLink to="/" end className={navClass}>Inicio</NavLink>
           <NavLink to="/tienda" className={navClass}>Tienda</NavLink>
+          <NavLink to="/sobre-nosotros" className={navClass}>Nosotros</NavLink>
           <NavLink to="/blog" className={navClass}>Blog</NavLink>
           <InstagramLink className="text-tengu-cream/70 transition hover:text-tengu-mustard">
             <InstagramIcon size={20} />

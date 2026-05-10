@@ -42,7 +42,7 @@ export default function HeroCarousel() {
           key={slide.src}
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0 -z-10 transition-opacity duration-1000 ease-in-out ${
-            i === current ? 'opacity-55' : 'opacity-0'
+            i === current ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <source
@@ -65,13 +65,13 @@ export default function HeroCarousel() {
         </picture>
       ))}
 
-      {/* Gradients para legibilidad del texto */}
+      {/* Vignette suave para que el texto se lea, pero sin tapar la imagen */}
       <div
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-tengu-dark via-tengu-dark/80 to-tengu-dark/30"
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-tengu-dark/85 via-tengu-dark/35 to-transparent"
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-tengu-dark/85 via-transparent to-tengu-dark/30"
+        className="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-tengu-dark/70 to-transparent"
         aria-hidden="true"
       />
 

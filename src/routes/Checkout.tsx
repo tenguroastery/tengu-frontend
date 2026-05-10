@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { ecommerceEvents } from '../lib/analytics';
@@ -47,7 +47,7 @@ export default function Checkout() {
     shipping_region: 'Región Metropolitana',
     shipping_notes: '',
   });
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu'>(null);
   const [error, setError] = useState<string | null>(null);
   const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
@@ -73,10 +73,22 @@ export default function Checkout() {
   const update = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const validateForm = (): boolean => {
+    if (!form.customer_email || !form.customer_name || !form.customer_phone || !form.customer_rut) {
+      setError('Completa todos los datos de contacto.');
+      return false;
+    }
+    if (shippingMethod !== 'pickup' && (!form.shipping_address || !form.shipping_comuna)) {
+      setError('Completa la dirección y comuna del despacho.');
+      return false;
+    }
+    return true;
+  };
+
+  const handlePayment = async (method: 'webpay' | 'khipu') => {
     setError(null);
-    setSubmitting(true);
+    if (!validateForm()) return;
+    setSubmitting(method);
     ecommerceEvents.beginCheckout(
       items.map((i) => ({
         item_id: i.productSlug,
@@ -105,13 +117,19 @@ export default function Checkout() {
         })),
       });
 
-      const init = await api.initWebpay(order.id);
-      setWebpay({ url: init.url, token: init.token });
-      // El form oculto se enviará automáticamente vía useEffect arriba.
+      if (method === 'webpay') {
+        const init = await api.initWebpay(order.id);
+        setWebpay({ url: init.url, token: init.token });
+        // El form oculto se enviará automáticamente vía useEffect arriba.
+      } else {
+        const init = await api.initKhipu(order.id);
+        const target = init.simplified_transfer_url || init.payment_url;
+        if (!target) throw new Error('Khipu no devolvió URL de pago');
+        window.location.href = target;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-      setSubmitting(false);
-      // ignora navigate — no se llama
+      setSubmitting(null);
       void navigate;
     }
   };
@@ -136,7 +154,7 @@ export default function Checkout() {
         Procesamos tu pago con Webpay (Transbank). Tarjetas chilenas crédito y débito.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 grid gap-10 md:grid-cols-[1fr_360px]">
+      <div className="mt-8 grid gap-10 md:grid-cols-[1fr_360px]">
         <div className="space-y-8">
           <fieldset className="rounded-xl bg-white p-6 shadow-sm">
             <legend className="px-2 font-display text-lg">Datos de contacto</legend>
@@ -264,18 +282,32 @@ export default function Checkout() {
             <span className="text-sm uppercase tracking-wider text-tengu-dark/60">Total</span>
             <span className="font-display text-2xl text-tengu-ink">{formatCLP(total)}</span>
           </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="mt-6 w-full rounded-md bg-tengu-mustard px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white disabled:opacity-50"
-          >
-            {submitting ? 'Procesando…' : 'Pagar con Webpay'}
-          </button>
+          <div className="mt-6 space-y-3">
+            <button
+              type="button"
+              onClick={() => handlePayment('webpay')}
+              disabled={submitting !== null}
+              className="w-full rounded-md bg-tengu-mustard px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white disabled:opacity-50"
+            >
+              {submitting === 'webpay' ? 'Conectando con Webpay…' : 'Pagar con tarjeta · Webpay'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePayment('khipu')}
+              disabled={submitting !== null}
+              className="w-full rounded-md border border-tengu-ink bg-white px-4 py-3 font-semibold uppercase tracking-wider text-tengu-ink transition hover:bg-tengu-ink hover:text-white disabled:opacity-50"
+            >
+              {submitting === 'khipu' ? 'Conectando con Khipu…' : 'Pagar por transferencia · Khipu'}
+            </button>
+          </div>
           <p className="mt-3 text-center text-xs text-tengu-dark/50">
-            🔒 Sandbox Transbank · No se cobra dinero real
+            🔒 Pago seguro · Procesado por la pasarela elegida
+          </p>
+          <p className="mt-1 text-center text-xs text-tengu-dark/40">
+            Webpay: tarjetas crédito/débito · Khipu: transferencia bancaria
           </p>
         </aside>
-      </form>
+      </div>
     </section>
   );
 }

@@ -24,6 +24,7 @@ import Cart from './routes/Cart';
 import Checkout from './routes/Checkout';
 import CheckoutError from './routes/CheckoutError';
 import Home from './routes/Home';
+import KhipuReturn from './routes/KhipuReturn';
 import Privacy from './routes/legal/Privacy';
 import Terms from './routes/legal/Terms';
 import Product from './routes/Product';
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/cafe/:slug" element={<Product />} />
           <Route path="/carrito" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/khipu/return" element={<KhipuReturn />} />
           <Route path="/thanks/:orderId" element={<Thanks />} />
           <Route path="/checkout/error" element={<CheckoutError />} />
           <Route path="/sobre-nosotros" element={<About />} />
@@ -65,6 +67,9 @@ export default function App() {
           <Route path="/shop" element={<Navigate to="/tienda" replace />} />
           <Route path="/shop/:slug" element={<RedirectShopProduct />} />
           <Route path="/cart" element={<Navigate to="/carrito" replace />} />
+          {/* Aliases comunes */}
+          <Route path="/nosotros" element={<Navigate to="/sobre-nosotros" replace />} />
+          <Route path="/about" element={<Navigate to="/sobre-nosotros" replace />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />

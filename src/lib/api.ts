@@ -1,4 +1,4 @@
-import type { Order, OrderPayload, Product, WebpayInit } from '../types';
+import type { KhipuInit, Order, OrderPayload, Product, WebpayInit } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
@@ -35,6 +35,15 @@ export const api = {
     request<WebpayInit>('/checkout/webpay/init', {
       method: 'POST',
       body: JSON.stringify({ order_id: orderId }),
+    }),
+  initKhipu: (orderId: number) =>
+    request<KhipuInit>('/checkout/khipu/init', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId }),
+    }),
+  verifyKhipu: (orderId: number) =>
+    request<{ order_status: string; khipu_status: string }>(`/checkout/khipu/verify/${orderId}`, {
+      method: 'POST',
     }),
 };
 

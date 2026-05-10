@@ -58,6 +58,8 @@ export type OrderItem = {
   subtotal_clp: number;
 };
 
+export type PaymentMethod = 'webpay' | 'khipu';
+
 export type Order = {
   id: number;
   status: OrderStatus;
@@ -73,6 +75,7 @@ export type Order = {
   shipping_cost_clp: number;
   subtotal_clp: number;
   total_clp: number;
+  payment_method: PaymentMethod | null;
   webpay_authorization_code: string | null;
   admin_notes: string | null;
   tracking_code: string | null;
@@ -85,4 +88,10 @@ export type Order = {
 export type WebpayInit = {
   token: string;
   url: string;
+};
+
+export type KhipuInit = {
+  payment_id: string;
+  payment_url: string;
+  simplified_transfer_url: string | null;
 };
