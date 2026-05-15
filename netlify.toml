@@ -18,13 +18,13 @@
 # --- Proxy al backend Render ---
 [[redirects]]
   from   = "/api/*"
-  to     = "https://tengu-backend.onrender.com/api/:splat"
+  to     = "https://tengu-backend.azurewebsites.net/api/:splat"
   status = 200
   force  = true
 
 [[redirects]]
   from   = "/uploads/*"
-  to     = "https://tengu-backend.onrender.com/uploads/:splat"
+  to     = "https://tengu-backend.azurewebsites.net/uploads/:splat"
   status = 200
   force  = true
 
