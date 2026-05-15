@@ -96,19 +96,16 @@ Fonts:
 - **Display**: Bungee (títulos)
 - **Body**: Inter (cuerpo)
 
-## Deploy
+## Deploy — Netlify
 
-Recomendado: **Vercel**.
+El repo trae un [`netlify.toml`](./netlify.toml) listo. Pasos:
 
-```bash
-# Build
-npm run build
+1. En Netlify: **Add new site > Import from Git** → conectar este repo (`Value-Data-Next-Gen/tengu-frontend`).
+2. Netlify lee `netlify.toml`: `npm run build` + publish `dist/`.
+3. **No** hace falta setear `VITE_API_BASE` — el `netlify.toml` proxia `/api/*` y `/uploads/*` al backend Render (`tengu-backend.onrender.com`). Si renombras el servicio en Render, edita el host en `netlify.toml` y commitea.
+4. Para analytics, setear opcionalmente `VITE_GA4_ID` o `VITE_GTM_ID` en la UI de Netlify.
 
-# El output queda en dist/
-```
-
-Variables de entorno en producción:
-- `VITE_API_BASE=https://api.tenguroastery.cl/api`
+> El archivo `vercel.json` queda en el repo por compatibilidad si después quieres deployar en Vercel — Netlify lo ignora.
 
 ## License
 
