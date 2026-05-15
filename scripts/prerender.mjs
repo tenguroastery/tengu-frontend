@@ -33,6 +33,21 @@ const CHROME_PATHS = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 ];
 
+// Fallback para entornos CI sin Chrome del sistema (Netlify, Vercel, Lambda).
+// @sparticuz/chromium provee un binario portable; cargado lazy para no pagarlo en dev.
+let sparticuzChromium = null;
+async function getSparticuzChrome() {
+  if (sparticuzChromium === null) {
+    try {
+      const mod = await import('@sparticuz/chromium');
+      sparticuzChromium = mod.default ?? mod;
+    } catch {
+      sparticuzChromium = false;
+    }
+  }
+  return sparticuzChromium || null;
+}
+
 const STATIC_ROUTES = [
   '/',
   '/tienda',
@@ -53,10 +68,18 @@ const PREVIEW_PORT = 4173;
 const PREVIEW_URL = `http://127.0.0.1:${PREVIEW_PORT}`;
 const HYDRATION_WAIT_MS = 1500;
 
-function findChrome() {
-  if (process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH;
+async function findChrome() {
+  if (process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)) {
+    return { executablePath: process.env.CHROME_PATH, args: null };
+  }
   for (const p of CHROME_PATHS) {
-    if (existsSync(p)) return p;
+    if (existsSync(p)) return { executablePath: p, args: null };
+  }
+  // Fallback CI: @sparticuz/chromium
+  const sparticuz = await getSparticuzChrome();
+  if (sparticuz) {
+    const executablePath = await sparticuz.executablePath();
+    return { executablePath, args: sparticuz.args };
   }
   return null;
 }
@@ -128,7 +151,7 @@ function writeRouteHtml(route, html) {
 }
 
 async function main() {
-  const chrome = findChrome();
+  const chrome = await findChrome();
   if (!chrome) {
     console.error('No se encontró Chrome/Edge. Define CHROME_PATH o instala Chrome.');
     process.exit(1);
@@ -147,7 +170,7 @@ async function main() {
   ];
 
   console.log(`[prerender] ${routes.length} rutas: ${STATIC_ROUTES.length} estáticas + ${productSlugs.length} productos + ${blogSlugs.length} posts`);
-  console.log(`[prerender] Chrome: ${chrome}`);
+  console.log(`[prerender] Chrome: ${chrome.executablePath}`);
 
   let preview = null;
   if (await isPreviewUp()) {
@@ -160,9 +183,9 @@ async function main() {
   let browser;
   try {
     browser = await puppeteer.launch({
-      executablePath: chrome,
+      executablePath: chrome.executablePath,
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      args: chrome.args ?? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     });
 
     for (const route of routes) {
