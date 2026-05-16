@@ -75,24 +75,7 @@ const SHIPPING_OPTIONS: ShippingOption[] = [
   },
 ];
 
-const REGIONES = [
-  'Región Metropolitana',
-  'Valparaíso',
-  "O'Higgins",
-  'Maule',
-  'Ñuble',
-  'Biobío',
-  'Araucanía',
-  'Los Ríos',
-  'Los Lagos',
-  'Aysén',
-  'Magallanes',
-  'Arica y Parinacota',
-  'Tarapacá',
-  'Antofagasta',
-  'Atacama',
-  'Coquimbo',
-];
+type RegionTree = { name: string; comunas: string[] };
 
 export default function Checkout() {
   const items = useCart((s) => s.items);
@@ -104,6 +87,7 @@ export default function Checkout() {
   const [optionKey, setOptionKey] = useState<string>('delivery-home');
   const [form, setForm] = useState<PrefillForm>(() => loadLocalPrefill());
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [regions, setRegions] = useState<RegionTree[]>([]);
   const [quote, setQuote] = useState<ShippingQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer'>(null);
@@ -115,7 +99,23 @@ export default function Checkout() {
   // Site settings (umbral envío gratis, etc.) — una sola vez
   useEffect(() => {
     api.getSiteSettings().then(setSiteSettings).catch(() => undefined);
+    api.listRegions().then(setRegions).catch(() => undefined);
   }, []);
+
+  // Comunas de la región seleccionada (relación padre-hijo).
+  const comunasOfRegion = useMemo(() => {
+    const r = regions.find((x) => x.name === form.shipping_region);
+    return r?.comunas ?? [];
+  }, [regions, form.shipping_region]);
+
+  // Si la comuna actual no pertenece a la región seleccionada, la limpiamos
+  // (típico cuando el usuario cambia de región o el prefill trae una comuna huérfana).
+  useEffect(() => {
+    if (!regions.length) return;
+    if (form.shipping_comuna && !comunasOfRegion.includes(form.shipping_comuna)) {
+      setForm((f) => ({ ...f, shipping_comuna: '' }));
+    }
+  }, [regions, comunasOfRegion, form.shipping_comuna]);
 
   // Prefill desde sesión
   useEffect(() => {
@@ -408,15 +408,6 @@ export default function Checkout() {
                     />
                   </FormField>
                 </div>
-                <FormField label="Comuna" required>
-                  <input
-                    type="text"
-                    required
-                    value={form.shipping_comuna}
-                    onChange={update('shipping_comuna')}
-                    className={inputClass}
-                  />
-                </FormField>
                 <FormField label="Región" required>
                   <select
                     required
@@ -424,9 +415,30 @@ export default function Checkout() {
                     onChange={update('shipping_region')}
                     className={inputClass}
                   >
-                    {REGIONES.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
+                    {regions.length === 0 && (
+                      <option value={form.shipping_region}>{form.shipping_region}</option>
+                    )}
+                    {regions.map((r) => (
+                      <option key={r.name} value={r.name}>
+                        {r.name}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+                <FormField label="Comuna" required>
+                  <select
+                    required
+                    value={form.shipping_comuna}
+                    onChange={update('shipping_comuna')}
+                    className={inputClass}
+                    disabled={comunasOfRegion.length === 0}
+                  >
+                    <option value="">
+                      {comunasOfRegion.length === 0 ? 'Selecciona una región primero' : 'Elige tu comuna'}
+                    </option>
+                    {comunasOfRegion.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
                       </option>
                     ))}
                   </select>

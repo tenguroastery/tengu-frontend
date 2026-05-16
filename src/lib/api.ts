@@ -91,6 +91,9 @@ export const api = {
   // --- Site settings (configurables desde /admin) ---
   getSiteSettings: () => request<SiteSettings>('/site/settings'),
 
+  // --- Regiones + comunas (catálogo para selects de checkout) ---
+  listRegions: () => request<Array<{ name: string; comunas: string[] }>>('/site/regions'),
+
   // --- Cotización de envío ---
   quoteShipping: (payload: {
     region: string;

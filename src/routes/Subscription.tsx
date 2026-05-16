@@ -24,11 +24,7 @@ const SHIPPING_OPTIONS: { value: ShippingMethod; label: string; cost: number; he
   { value: 'pickup', label: 'Retiro en local', cost: 0, help: 'Coordinamos por WhatsApp' },
 ];
 
-const REGIONES = [
-  'Región Metropolitana', 'Valparaíso', "O'Higgins", 'Maule', 'Ñuble', 'Biobío',
-  'Araucanía', 'Los Ríos', 'Los Lagos', 'Aysén', 'Magallanes',
-  'Arica y Parinacota', 'Tarapacá', 'Antofagasta', 'Atacama', 'Coquimbo',
-];
+type RegionTree = { name: string; comunas: string[] };
 
 const DISCOUNT_PCT = 10;
 
@@ -64,6 +60,7 @@ export default function Subscription() {
 
   const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu'>(null);
   const [error, setError] = useState<string | null>(null);
+  const [regions, setRegions] = useState<RegionTree[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,7 +74,20 @@ export default function Subscription() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+    api.listRegions().then(setRegions).catch(() => undefined);
   }, []);
+
+  const comunasOfRegion = useMemo(() => {
+    const r = regions.find((x) => x.name === form.shipping_region);
+    return r?.comunas ?? [];
+  }, [regions, form.shipping_region]);
+
+  useEffect(() => {
+    if (!regions.length) return;
+    if (form.shipping_comuna && !comunasOfRegion.includes(form.shipping_comuna)) {
+      setForm((f) => ({ ...f, shipping_comuna: '' }));
+    }
+  }, [regions, comunasOfRegion, form.shipping_comuna]);
 
   const selectedProduct = useMemo(
     () => products.find((p) => p.slug === productSlug),
@@ -359,12 +369,20 @@ export default function Subscription() {
                           <input type="text" required value={form.shipping_address} onChange={update('shipping_address')} placeholder="Av. Providencia 1234, dpto 56" className={inputClass} />
                         </Field>
                       </div>
-                      <Field label="Comuna" required>
-                        <input type="text" required value={form.shipping_comuna} onChange={update('shipping_comuna')} className={inputClass} />
-                      </Field>
                       <Field label="Región" required>
                         <select required value={form.shipping_region} onChange={update('shipping_region')} className={inputClass}>
-                          {REGIONES.map((r) => <option key={r} value={r}>{r}</option>)}
+                          {regions.length === 0 && (
+                            <option value={form.shipping_region}>{form.shipping_region}</option>
+                          )}
+                          {regions.map((r) => <option key={r.name} value={r.name}>{r.name}</option>)}
+                        </select>
+                      </Field>
+                      <Field label="Comuna" required>
+                        <select required value={form.shipping_comuna} onChange={update('shipping_comuna')} className={inputClass} disabled={comunasOfRegion.length === 0}>
+                          <option value="">
+                            {comunasOfRegion.length === 0 ? 'Selecciona una región primero' : 'Elige tu comuna'}
+                          </option>
+                          {comunasOfRegion.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </Field>
                     </div>
