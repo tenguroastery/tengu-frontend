@@ -47,9 +47,10 @@ export default function CuentaLogin() {
 
   return (
     <section className="mx-auto max-w-md px-6 py-20">
-      <h1 className="font-display text-3xl">Entrar a tu cuenta</h1>
+      <h1 className="font-display text-3xl">Entrar o crear cuenta</h1>
       <p className="mt-2 text-sm text-tengu-dark/70">
         Te mandamos un link mágico al correo. Sin contraseña.
+        Si es tu primera vez, te creamos la cuenta automáticamente.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">

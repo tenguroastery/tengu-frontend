@@ -230,11 +230,11 @@ export default function Checkout() {
 
       {!jwt && (
         <div className="mt-4 rounded-md border border-tengu-ink/15 bg-tengu-ink/5 px-4 py-3 text-sm">
-          ¿Ya compraste antes?{' '}
+          <strong>¿Tienes cuenta o quieres crear una?</strong>{' '}
           <Link to="/cuenta/login" className="font-semibold text-tengu-ink hover:underline">
-            Entra a tu cuenta
+            Entrá con tu email
           </Link>{' '}
-          para prellenar tus datos.
+          y te prellenamos los datos. Tu cuenta se crea sola, sin contraseña.
         </div>
       )}
 
