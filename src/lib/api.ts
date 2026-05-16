@@ -8,6 +8,9 @@ import type {
   Review,
   ReviewSubmit,
   ReviewSummary,
+  ShippingMode,
+  ShippingQuote,
+  SiteSettings,
   SubscriptionCreateResponse,
   SubscriptionPayload,
   WebpayInit,
@@ -84,6 +87,22 @@ export const api = {
   patchMe: (jwt: string, patch: Partial<CustomerProfile>) =>
     request<CustomerProfile>('/auth/me', { method: 'PATCH', body: JSON.stringify(patch) }, jwt),
   listMyOrders: (jwt: string) => request<Order[]>('/auth/me/orders', undefined, jwt),
+
+  // --- Site settings (configurables desde /admin) ---
+  getSiteSettings: () => request<SiteSettings>('/site/settings'),
+
+  // --- Cotización de envío ---
+  quoteShipping: (payload: {
+    region: string;
+    comuna?: string | null;
+    weight_g: number;
+    mode: ShippingMode;
+    subtotal_clp: number;
+  }) =>
+    request<ShippingQuote>('/shipping/quote', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 export function formatCLP(value: number): string {

@@ -28,6 +28,24 @@ export type Product = {
 };
 
 export type ShippingMethod = 'rm' | 'regiones' | 'pickup';
+export type ShippingMode = 'domicilio' | 'punto';
+
+export type SiteSettings = {
+  free_shipping_threshold_clp: number;
+  roast_day: string;
+  ship_days: string;
+  subscription_discount_pct: number;
+  wholesale_min_kg: number;
+  wholesale_lead_msg: string;
+};
+
+export type ShippingQuote = {
+  cost_clp: number;
+  zone: string;
+  size_band: string;
+  is_free: boolean;
+  reason: string;
+};
 
 export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'failed' | 'canceled';
 
@@ -43,6 +61,7 @@ export type OrderPayload = {
   customer_phone: string;
   customer_rut: string;
   shipping_method: ShippingMethod;
+  shipping_mode?: ShippingMode;
   shipping_address?: string;
   shipping_comuna?: string;
   shipping_region?: string;

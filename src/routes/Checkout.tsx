@@ -5,7 +5,7 @@ import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
 import { useAuth } from '../store/auth';
 import { selectCartSubtotal, useCart } from '../store/cart';
-import type { ShippingMethod } from '../types';
+import type { ShippingMethod, ShippingMode, ShippingQuote, SiteSettings } from '../types';
 
 const PREFILL_KEY = 'tengu-checkout-prefill-v1';
 
@@ -41,16 +41,44 @@ function loadLocalPrefill(): PrefillForm {
   }
 }
 
-const SHIPPING_OPTIONS: { value: ShippingMethod; label: string; cost: number; help: string }[] = [
-  { value: 'rm', label: 'Despacho Región Metropolitana', cost: 3500, help: '2-3 días hábiles' },
-  { value: 'regiones', label: 'Despacho regiones', cost: 5500, help: '3-7 días hábiles' },
-  { value: 'pickup', label: 'Retiro en local', cost: 0, help: 'Coordinamos por WhatsApp' },
+type ShippingOption = {
+  key: string;
+  method: ShippingMethod;
+  mode: ShippingMode | null;
+  label: string;
+  help: string;
+};
+
+// 'rm' lo usamos como "delivery" (legacy del enum). El backend acepta rm/regiones/pickup;
+// el método real lo distingue shipping_mode + region.
+const SHIPPING_OPTIONS: ShippingOption[] = [
+  {
+    key: 'delivery-home',
+    method: 'rm',
+    mode: 'domicilio',
+    label: 'Despacho a domicilio',
+    help: 'Blue Express a tu puerta. 2-5 días hábiles.',
+  },
+  {
+    key: 'delivery-point',
+    method: 'rm',
+    mode: 'punto',
+    label: 'Punto Blue Express',
+    help: 'Retira en Estación Copec / Punto Blue. Más económico.',
+  },
+  {
+    key: 'pickup',
+    method: 'pickup',
+    mode: null,
+    label: 'Retiro en Rancagua',
+    help: 'Coordinamos por WhatsApp. Gratis.',
+  },
 ];
 
 const REGIONES = [
   'Región Metropolitana',
   'Valparaíso',
-  'O\'Higgins',
+  "O'Higgins",
   'Maule',
   'Ñuble',
   'Biobío',
@@ -73,30 +101,44 @@ export default function Checkout() {
   const jwt = useAuth((s) => s.jwt);
   const customer = useAuth((s) => s.customer);
 
-  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('rm');
+  const [optionKey, setOptionKey] = useState<string>('delivery-home');
   const [form, setForm] = useState<PrefillForm>(() => loadLocalPrefill());
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [quote, setQuote] = useState<ShippingQuote | null>(null);
+  const [quoting, setQuoting] = useState(false);
+  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer'>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
-  // Si hay sesión, prellena con datos del customer (gana sobre localStorage)
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Site settings (umbral envío gratis, etc.) — una sola vez
+  useEffect(() => {
+    api.getSiteSettings().then(setSiteSettings).catch(() => undefined);
+  }, []);
+
+  // Prefill desde sesión
   useEffect(() => {
     if (!jwt) return;
-    api.getMe(jwt).then((me) => {
-      setForm((f) => ({
-        ...f,
-        customer_email: me.email,
-        customer_name: me.name ?? f.customer_name,
-        customer_phone: me.phone ?? f.customer_phone,
-        customer_rut: me.rut ?? f.customer_rut,
-        shipping_address: me.shipping_address ?? f.shipping_address,
-        shipping_comuna: me.shipping_comuna ?? f.shipping_comuna,
-        shipping_region: me.shipping_region ?? f.shipping_region,
-        shipping_notes: me.shipping_notes ?? f.shipping_notes,
-      }));
-    }).catch(() => {
-      // JWT inválido/vencido: ignoramos, queda el prefill de localStorage
-    });
+    api
+      .getMe(jwt)
+      .then((me) => {
+        setForm((f) => ({
+          ...f,
+          customer_email: me.email,
+          customer_name: me.name ?? f.customer_name,
+          customer_phone: me.phone ?? f.customer_phone,
+          customer_rut: me.rut ?? f.customer_rut,
+          shipping_address: me.shipping_address ?? f.shipping_address,
+          shipping_comuna: me.shipping_comuna ?? f.shipping_comuna,
+          shipping_region: me.shipping_region ?? f.shipping_region,
+          shipping_notes: me.shipping_notes ?? f.shipping_notes,
+        }));
+      })
+      .catch(() => undefined);
   }, [jwt]);
 
-  // Si ya teníamos customer en el store, úsalo de entrada (evita flash)
+  // Prefill desde customer en store
   useEffect(() => {
     if (!customer) return;
     setForm((f) => ({
@@ -110,23 +152,55 @@ export default function Checkout() {
       shipping_notes: customer.shipping_notes || f.shipping_notes,
     }));
   }, [customer]);
-  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer'>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const shippingCost = useMemo(
-    () => SHIPPING_OPTIONS.find((o) => o.value === shippingMethod)?.cost ?? 0,
-    [shippingMethod],
+  const selectedOption = useMemo(
+    () => SHIPPING_OPTIONS.find((o) => o.key === optionKey) ?? SHIPPING_OPTIONS[0],
+    [optionKey],
   );
-  const total = subtotal + shippingCost;
 
-  // Cuando recibimos el token de Webpay, auto-submit del form oculto.
+  const cartWeightG = useMemo(
+    () => items.reduce((sum, i) => sum + i.sizeG * i.quantity, 0),
+    [items],
+  );
+
+  // Cotiza shipping cada vez que cambian inputs relevantes (debounced).
   useEffect(() => {
-    if (webpay && formRef.current) {
-      formRef.current.submit();
+    if (selectedOption.method === 'pickup') {
+      setQuote({ cost_clp: 0, zone: '-', size_band: '-', is_free: true, reason: 'Retiro en local' });
+      return;
     }
+    if (!form.shipping_region || !form.shipping_comuna.trim() || cartWeightG === 0) {
+      setQuote(null);
+      return;
+    }
+    setQuoting(true);
+    const ctl = new AbortController();
+    const t = setTimeout(() => {
+      api
+        .quoteShipping({
+          region: form.shipping_region,
+          comuna: form.shipping_comuna.trim(),
+          weight_g: cartWeightG,
+          mode: selectedOption.mode ?? 'domicilio',
+          subtotal_clp: subtotal,
+        })
+        .then((q) => !ctl.signal.aborted && setQuote(q))
+        .catch(() => !ctl.signal.aborted && setQuote(null))
+        .finally(() => !ctl.signal.aborted && setQuoting(false));
+    }, 350);
+    return () => {
+      ctl.abort();
+      clearTimeout(t);
+    };
+  }, [selectedOption, form.shipping_region, form.shipping_comuna, cartWeightG, subtotal]);
+
+  const shippingCost = quote?.cost_clp ?? 0;
+  const total = subtotal + shippingCost;
+  const freeShippingThreshold = siteSettings?.free_shipping_threshold_clp ?? 0;
+  const remainingForFreeShipping = freeShippingThreshold > 0 ? freeShippingThreshold - subtotal : 0;
+
+  useEffect(() => {
+    if (webpay && formRef.current) formRef.current.submit();
   }, [webpay]);
 
   if (items.length === 0 && !submitting && !webpay) {
@@ -141,7 +215,7 @@ export default function Checkout() {
       setError('Completa todos los datos de contacto.');
       return false;
     }
-    if (shippingMethod !== 'pickup' && (!form.shipping_address || !form.shipping_comuna)) {
+    if (selectedOption.method !== 'pickup' && (!form.shipping_address || !form.shipping_comuna)) {
       setError('Completa la dirección y comuna del despacho.');
       return false;
     }
@@ -163,23 +237,22 @@ export default function Checkout() {
       total,
     );
     try {
-      // Guarda prefill para próximas compras (excluye notas porque cambian)
       try {
-        localStorage.setItem(
-          PREFILL_KEY,
-          JSON.stringify({ ...form, shipping_notes: '' }),
-        );
-      } catch { /* localStorage lleno o desactivado: ignorar */ }
+        localStorage.setItem(PREFILL_KEY, JSON.stringify({ ...form, shipping_notes: '' }));
+      } catch {
+        /* localStorage lleno o desactivado: ignorar */
+      }
 
       const order = await api.createOrder({
         customer_email: form.customer_email.trim(),
         customer_name: form.customer_name.trim(),
         customer_phone: form.customer_phone.trim(),
         customer_rut: form.customer_rut.trim(),
-        shipping_method: shippingMethod,
-        shipping_address: shippingMethod !== 'pickup' ? form.shipping_address.trim() : undefined,
-        shipping_comuna: shippingMethod !== 'pickup' ? form.shipping_comuna.trim() : undefined,
-        shipping_region: shippingMethod !== 'pickup' ? form.shipping_region : undefined,
+        shipping_method: selectedOption.method,
+        shipping_mode: selectedOption.mode ?? undefined,
+        shipping_address: selectedOption.method !== 'pickup' ? form.shipping_address.trim() : undefined,
+        shipping_comuna: selectedOption.method !== 'pickup' ? form.shipping_comuna.trim() : undefined,
+        shipping_region: selectedOption.method !== 'pickup' ? form.shipping_region : undefined,
         shipping_notes: form.shipping_notes.trim() || undefined,
         payment_method: method,
         items: items.map((i) => ({
@@ -198,8 +271,6 @@ export default function Checkout() {
         if (!target) throw new Error('Khipu no devolvió URL de pago');
         window.location.href = target;
       } else {
-        // bank_transfer: la orden queda pending, el cliente paga en BanchilePagos
-        // y nos avisa por WhatsApp con comprobante. Thanks.tsx muestra el CTA.
         navigate(`/thanks/${order.id}?method=bank_transfer`);
       }
     } catch (err) {
@@ -213,7 +284,9 @@ export default function Checkout() {
       <div className="mx-auto max-w-md px-6 py-24 text-center">
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-tengu-dark/10 border-t-tengu-ink" />
         <p className="mt-6 font-display text-xl">Te estamos llevando a Webpay…</p>
-        <p className="mt-2 text-sm text-tengu-dark/60">Si no se redirige automáticamente, no cierres esta pestaña.</p>
+        <p className="mt-2 text-sm text-tengu-dark/60">
+          Si no se redirige automáticamente, no cierres esta pestaña.
+        </p>
         <form ref={formRef} method="POST" action={webpay.url} className="hidden">
           <input type="hidden" name="token_ws" value={webpay.token} />
         </form>
@@ -238,22 +311,62 @@ export default function Checkout() {
         </div>
       )}
 
+      {freeShippingThreshold > 0 && (
+        <div
+          className={`mt-3 rounded-md px-4 py-2 text-sm ${
+            remainingForFreeShipping <= 0
+              ? 'bg-tengu-ink text-white'
+              : 'bg-tengu-mustard/20 text-tengu-dark'
+          }`}
+        >
+          {remainingForFreeShipping <= 0
+            ? `🎉 Envío gratis por superar ${formatCLP(freeShippingThreshold)}`
+            : `Te faltan ${formatCLP(remainingForFreeShipping)} para envío gratis.`}
+        </div>
+      )}
+
       <div className="mt-8 grid gap-10 md:grid-cols-[1fr_360px]">
         <div className="space-y-8">
           <fieldset className="rounded-xl bg-white p-6 shadow-sm">
             <legend className="px-2 font-display text-lg">Datos de contacto</legend>
             <div className="mt-2 grid gap-4 sm:grid-cols-2">
               <FormField label="Nombre completo" required>
-                <input type="text" required value={form.customer_name} onChange={update('customer_name')} className={inputClass} />
+                <input
+                  type="text"
+                  required
+                  value={form.customer_name}
+                  onChange={update('customer_name')}
+                  className={inputClass}
+                />
               </FormField>
               <FormField label="Email" required>
-                <input type="email" required value={form.customer_email} onChange={update('customer_email')} className={inputClass} />
+                <input
+                  type="email"
+                  required
+                  value={form.customer_email}
+                  onChange={update('customer_email')}
+                  className={inputClass}
+                />
               </FormField>
               <FormField label="Teléfono" required>
-                <input type="tel" required value={form.customer_phone} onChange={update('customer_phone')} placeholder="+56 9 XXXX XXXX" className={inputClass} />
+                <input
+                  type="tel"
+                  required
+                  value={form.customer_phone}
+                  onChange={update('customer_phone')}
+                  placeholder="+56 9 XXXX XXXX"
+                  className={inputClass}
+                />
               </FormField>
               <FormField label="RUT" required>
-                <input type="text" required value={form.customer_rut} onChange={update('customer_rut')} placeholder="11.111.111-1" className={inputClass} />
+                <input
+                  type="text"
+                  required
+                  value={form.customer_rut}
+                  onChange={update('customer_rut')}
+                  placeholder="11.111.111-1"
+                  className={inputClass}
+                />
               </FormField>
             </div>
           </fieldset>
@@ -263,9 +376,9 @@ export default function Checkout() {
             <div className="mt-2 space-y-2">
               {SHIPPING_OPTIONS.map((opt) => (
                 <label
-                  key={opt.value}
+                  key={opt.key}
                   className={`flex cursor-pointer items-center justify-between rounded-md border p-4 transition ${
-                    shippingMethod === opt.value
+                    optionKey === opt.key
                       ? 'border-tengu-ink bg-tengu-ink/5'
                       : 'border-tengu-dark/15 hover:border-tengu-ink/40'
                   }`}
@@ -274,9 +387,9 @@ export default function Checkout() {
                     <input
                       type="radio"
                       name="shipping"
-                      value={opt.value}
-                      checked={shippingMethod === opt.value}
-                      onChange={() => setShippingMethod(opt.value)}
+                      value={opt.key}
+                      checked={optionKey === opt.key}
+                      onChange={() => setOptionKey(opt.key)}
                       className="accent-tengu-ink"
                     />
                     <div>
@@ -284,14 +397,14 @@ export default function Checkout() {
                       <p className="text-xs text-tengu-dark/60">{opt.help}</p>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold">
-                    {opt.cost === 0 ? 'Gratis' : formatCLP(opt.cost)}
-                  </span>
+                  {opt.method === 'pickup' && (
+                    <span className="text-sm font-semibold">Gratis</span>
+                  )}
                 </label>
               ))}
             </div>
 
-            {shippingMethod !== 'pickup' && (
+            {selectedOption.method !== 'pickup' && (
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <FormField label="Dirección" required>
@@ -306,12 +419,25 @@ export default function Checkout() {
                   </FormField>
                 </div>
                 <FormField label="Comuna" required>
-                  <input type="text" required value={form.shipping_comuna} onChange={update('shipping_comuna')} className={inputClass} />
+                  <input
+                    type="text"
+                    required
+                    value={form.shipping_comuna}
+                    onChange={update('shipping_comuna')}
+                    className={inputClass}
+                  />
                 </FormField>
                 <FormField label="Región" required>
-                  <select required value={form.shipping_region} onChange={update('shipping_region')} className={inputClass}>
+                  <select
+                    required
+                    value={form.shipping_region}
+                    onChange={update('shipping_region')}
+                    className={inputClass}
+                  >
                     {REGIONES.map((r) => (
-                      <option key={r} value={r}>{r}</option>
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
                     ))}
                   </select>
                 </FormField>
@@ -327,6 +453,12 @@ export default function Checkout() {
                   </FormField>
                 </div>
               </div>
+            )}
+
+            {siteSettings && (
+              <p className="mt-4 text-xs text-tengu-dark/60">
+                Tostamos los {siteSettings.roast_day} · despachamos {siteSettings.ship_days}.
+              </p>
             )}
           </fieldset>
 
@@ -348,7 +480,9 @@ export default function Checkout() {
                     {formatSize(item.sizeG)} · {item.quantity}x
                   </span>
                 </span>
-                <span className="font-semibold">{formatCLP(item.unitPriceClp * item.quantity)}</span>
+                <span className="font-semibold">
+                  {formatCLP(item.unitPriceClp * item.quantity)}
+                </span>
               </li>
             ))}
           </ul>
@@ -359,7 +493,21 @@ export default function Checkout() {
             </div>
             <div className="flex justify-between">
               <dt>Envío</dt>
-              <dd>{shippingCost === 0 ? 'Gratis' : formatCLP(shippingCost)}</dd>
+              <dd>
+                {selectedOption.method === 'pickup' ? (
+                  'Gratis'
+                ) : quoting ? (
+                  <span className="text-tengu-dark/50">Cotizando…</span>
+                ) : quote ? (
+                  quote.is_free ? (
+                    <span className="font-semibold text-tengu-ink">Gratis 🎉</span>
+                  ) : (
+                    formatCLP(quote.cost_clp)
+                  )
+                ) : (
+                  <span className="text-xs text-tengu-dark/50">Ingresa región y comuna</span>
+                )}
+              </dd>
             </div>
           </dl>
           <div className="mt-4 flex items-baseline justify-between border-t border-tengu-dark/10 pt-4">

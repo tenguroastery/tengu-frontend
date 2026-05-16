@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { formatCLP, formatSize } from '../lib/api';
 import { selectCartSubtotal, useCart } from '../store/cart';
+import { useSiteSettings } from '../store/site';
 
 export default function Cart() {
   const items = useCart((s) => s.items);
@@ -9,6 +10,14 @@ export default function Cart() {
   const setQuantity = useCart((s) => s.setQuantity);
   const removeItem = useCart((s) => s.removeItem);
   const clear = useCart((s) => s.clear);
+  const siteSettings = useSiteSettings();
+
+  const freeShippingThreshold = siteSettings?.free_shipping_threshold_clp ?? 0;
+  const remaining = freeShippingThreshold > 0 ? freeShippingThreshold - subtotal : 0;
+  const progressPct =
+    freeShippingThreshold > 0
+      ? Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100))
+      : 0;
 
   if (items.length === 0) {
     return (
@@ -94,6 +103,27 @@ export default function Cart() {
 
         <aside className="h-fit rounded-lg bg-white p-6 shadow-sm">
           <h2 className="font-display text-xl">Resumen</h2>
+
+          {freeShippingThreshold > 0 && (
+            <div className="mt-3 rounded-md bg-tengu-cream p-3 text-xs">
+              {remaining <= 0 ? (
+                <p className="font-semibold text-tengu-ink">🎉 Envío gratis aplicado</p>
+              ) : (
+                <>
+                  <p>
+                    Te faltan <strong>{formatCLP(remaining)}</strong> para envío gratis.
+                  </p>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-tengu-dark/10">
+                    <div
+                      className="h-full bg-tengu-ink transition-all"
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
