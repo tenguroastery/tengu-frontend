@@ -293,7 +293,10 @@ export default function Subscription() {
                       <p className="text-tengu-dark/70">
                         <span className="line-through opacity-60">{formatCLP(basePriceClp)}</span>{' '}
                         <strong className="font-display text-lg text-tengu-ink">{formatCLP(subscribedPrice)}</strong>{' '}
-                        por entrega · {formatCLP(pricePerKg(subscribedPrice, sizeG))}/kg
+                        por entrega
+                        {sizeG >= 1000
+                          ? ` · ${formatCLP(pricePerKg(subscribedPrice, sizeG))}/kg`
+                          : ` · equivale a ${formatCLP(pricePerKg(subscribedPrice, sizeG))}/kg`}
                       </p>
                       <p className="mt-1 text-xs text-tengu-mustard">
                         Ahorras {formatCLP(basePriceClp - subscribedPrice)} cada vez · {DISCOUNT_PCT}% descuento

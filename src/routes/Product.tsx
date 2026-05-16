@@ -200,7 +200,9 @@ export default function Product() {
             <div>
               <p className="font-display text-3xl text-tengu-ink">{formatCLP(variant.price_clp * quantity)}</p>
               <p className="mt-1 text-xs text-tengu-dark/50">
-                {formatCLP(pricePerKg(variant.price_clp, variant.size_g))} por kilo
+                {variant.size_g >= 1000
+                  ? `${formatCLP(pricePerKg(variant.price_clp, variant.size_g))} por kilo`
+                  : `equivale a ${formatCLP(pricePerKg(variant.price_clp, variant.size_g))}/kg`}
               </p>
             </div>
             <button

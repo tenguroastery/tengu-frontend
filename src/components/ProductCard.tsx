@@ -1,14 +1,20 @@
 import { Link } from 'react-router-dom';
 
 import type { Product } from '../types';
-import { formatCLP, pricePerKg } from '../lib/api';
+import { formatCLP, formatSize, pricePerKg } from '../lib/api';
 
 export default function ProductCard({ product }: { product: Product }) {
   const cheapest = product.variants.reduce(
     (min, v) => (v.price_clp < min.price_clp ? v : min),
     product.variants[0],
   );
-  const perKg = pricePerKg(cheapest.price_clp, cheapest.size_g);
+  // El "$/kg" debe reflejar el mejor precio real de la línea (variante más grande),
+  // no extrapolar desde una bolsa chica. Asumimos que más gramos = mejor $/kg.
+  const bestByKg = product.variants.reduce(
+    (best, v) => (v.size_g > best.size_g ? v : best),
+    product.variants[0],
+  );
+  const perKgBest = pricePerKg(bestByKg.price_clp, bestByKg.size_g);
 
   return (
     <Link
@@ -43,7 +49,9 @@ export default function ProductCard({ product }: { product: Product }) {
           <p className="text-sm font-semibold text-tengu-ink">
             desde {formatCLP(cheapest.price_clp)}
           </p>
-          <p className="text-xs text-tengu-dark/50">{formatCLP(perKg)}/kg</p>
+          <p className="text-xs text-tengu-dark/50">
+            {formatSize(bestByKg.size_g)} a {formatCLP(perKgBest)}/kg
+          </p>
         </div>
       </div>
     </Link>
