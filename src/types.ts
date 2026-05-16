@@ -47,6 +47,7 @@ export type OrderPayload = {
   shipping_comuna?: string;
   shipping_region?: string;
   shipping_notes?: string;
+  payment_method?: PaymentMethod;
   items: OrderItemPayload[];
 };
 
@@ -60,7 +61,7 @@ export type OrderItem = {
   subtotal_clp: number;
 };
 
-export type PaymentMethod = 'webpay' | 'khipu';
+export type PaymentMethod = 'webpay' | 'khipu' | 'bank_transfer';
 
 export type Order = {
   id: number;

@@ -27,7 +27,15 @@ const STATUS_COPY = {
     body: 'No se realizó cargo. Tu carrito sigue intacto si quieres volver.',
     color: 'text-tengu-coral',
   },
+  pending_transfer: {
+    title: 'Pedido creado · falta pagar',
+    body: 'Termina tu compra en BanchilePagos. Cuando recibamos el comprobante despachamos.',
+    color: 'text-tengu-mustard',
+  },
 };
+
+const BANCHILE_URL = 'https://micrositios.banchilepagos.cl/roastery_2565';
+const WHATSAPP_URL = 'https://wa.me/56950013366';
 
 export default function Thanks() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -80,8 +88,12 @@ export default function Thanks() {
     );
   }
 
+  const isBankTransfer =
+    params.get('method') === 'bank_transfer' || order.payment_method === 'bank_transfer';
   const effectiveStatus = (queryStatus === 'paid' || queryStatus === 'failed' || queryStatus === 'canceled')
     ? queryStatus
+    : isBankTransfer && order.status === 'pending'
+    ? 'pending_transfer'
     : order.status;
   const copy = STATUS_COPY[effectiveStatus as keyof typeof STATUS_COPY] ?? STATUS_COPY.pending;
 
@@ -95,6 +107,49 @@ export default function Thanks() {
         <p className="mt-3 text-xs text-tengu-dark/50">
           Código de autorización Webpay: <code className="font-mono">{order.webpay_authorization_code}</code>
         </p>
+      )}
+
+      {effectiveStatus === 'pending_transfer' && (
+        <div className="mt-8 rounded-xl border-2 border-tengu-ink/20 bg-white p-6 shadow-sm">
+          <h2 className="font-display text-xl text-tengu-ink">Cómo terminar tu pago</h2>
+          <ol className="mt-4 space-y-3 text-sm">
+            <li className="flex gap-3">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-tengu-ink text-xs font-bold text-white">1</span>
+              <div>
+                Abre <strong>BanchilePagos</strong> y paga el total{' '}
+                <strong className="font-display text-tengu-ink">{formatCLP(order.total_clp)}</strong>.
+                Indica como referencia tu pedido <code className="font-mono">#{order.id}</code>.
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-tengu-ink text-xs font-bold text-white">2</span>
+              <div>Mándanos el comprobante por WhatsApp para confirmar.</div>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-tengu-ink text-xs font-bold text-white">3</span>
+              <div>Despachamos en 1-2 días hábiles tras confirmar el pago.</div>
+            </li>
+          </ol>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href={BANCHILE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 rounded-md bg-tengu-ink px-5 py-3 text-center text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark"
+            >
+              Pagar ahora con BanchilePagos →
+            </a>
+            <a
+              href={`${WHATSAPP_URL}?text=${encodeURIComponent(`Hola, adjunto comprobante del pedido #${order.id} (${formatCLP(order.total_clp)})`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-tengu-ink px-5 py-3 text-center text-sm font-semibold uppercase tracking-wider text-tengu-ink transition hover:bg-tengu-ink hover:text-white"
+            >
+              Enviar comprobante
+            </a>
+          </div>
+        </div>
       )}
 
       <div className="mt-10 rounded-xl bg-white p-6 shadow-sm">

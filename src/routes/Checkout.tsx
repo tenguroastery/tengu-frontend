@@ -47,7 +47,7 @@ export default function Checkout() {
     shipping_region: 'Región Metropolitana',
     shipping_notes: '',
   });
-  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu'>(null);
+  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer'>(null);
   const [error, setError] = useState<string | null>(null);
   const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
@@ -85,7 +85,7 @@ export default function Checkout() {
     return true;
   };
 
-  const handlePayment = async (method: 'webpay' | 'khipu') => {
+  const handlePayment = async (method: 'webpay' | 'khipu' | 'bank_transfer') => {
     setError(null);
     if (!validateForm()) return;
     setSubmitting(method);
@@ -110,6 +110,7 @@ export default function Checkout() {
         shipping_comuna: shippingMethod !== 'pickup' ? form.shipping_comuna.trim() : undefined,
         shipping_region: shippingMethod !== 'pickup' ? form.shipping_region : undefined,
         shipping_notes: form.shipping_notes.trim() || undefined,
+        payment_method: method,
         items: items.map((i) => ({
           product_slug: i.productSlug,
           size_g: i.sizeG,
@@ -120,17 +121,19 @@ export default function Checkout() {
       if (method === 'webpay') {
         const init = await api.initWebpay(order.id);
         setWebpay({ url: init.url, token: init.token });
-        // El form oculto se enviará automáticamente vía useEffect arriba.
-      } else {
+      } else if (method === 'khipu') {
         const init = await api.initKhipu(order.id);
         const target = init.simplified_transfer_url || init.payment_url;
         if (!target) throw new Error('Khipu no devolvió URL de pago');
         window.location.href = target;
+      } else {
+        // bank_transfer: la orden queda pending, el cliente paga en BanchilePagos
+        // y nos avisa por WhatsApp con comprobante. Thanks.tsx muestra el CTA.
+        navigate(`/thanks/${order.id}?method=bank_transfer`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setSubmitting(null);
-      void navigate;
     }
   };
 
@@ -151,7 +154,7 @@ export default function Checkout() {
     <section className="mx-auto max-w-5xl px-6 py-12">
       <h1 className="font-display text-3xl">Checkout</h1>
       <p className="mt-1 text-sm text-tengu-dark/60">
-        Procesamos tu pago con Webpay (Transbank). Tarjetas chilenas crédito y débito.
+        Procesamos tu pago vía <strong>BanchilePagos</strong>. Webpay y Khipu llegan pronto.
       </p>
 
       <div className="mt-8 grid gap-10 md:grid-cols-[1fr_360px]">
@@ -285,26 +288,44 @@ export default function Checkout() {
           <div className="mt-6 space-y-3">
             <button
               type="button"
-              onClick={() => handlePayment('webpay')}
+              onClick={() => handlePayment('bank_transfer')}
               disabled={submitting !== null}
-              className="w-full rounded-md bg-tengu-mustard px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white disabled:opacity-50"
+              className="w-full rounded-md bg-tengu-ink px-4 py-3 font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark disabled:opacity-50"
             >
-              {submitting === 'webpay' ? 'Conectando con Webpay…' : 'Pagar con tarjeta · Webpay'}
+              {submitting === 'bank_transfer' ? 'Creando tu pedido…' : 'Pagar con BanchilePagos'}
             </button>
-            <button
-              type="button"
-              onClick={() => handlePayment('khipu')}
-              disabled={submitting !== null}
-              className="w-full rounded-md border border-tengu-ink bg-white px-4 py-3 font-semibold uppercase tracking-wider text-tengu-ink transition hover:bg-tengu-ink hover:text-white disabled:opacity-50"
-            >
-              {submitting === 'khipu' ? 'Conectando con Khipu…' : 'Pagar por transferencia · Khipu'}
-            </button>
+
+            <div className="relative">
+              <button
+                type="button"
+                disabled
+                className="w-full cursor-not-allowed rounded-md border border-tengu-dark/15 bg-tengu-dark/5 px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark/40"
+              >
+                Tarjeta · Webpay
+              </button>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-tengu-mustard px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
+                Próximamente
+              </span>
+            </div>
+
+            <div className="relative">
+              <button
+                type="button"
+                disabled
+                className="w-full cursor-not-allowed rounded-md border border-tengu-dark/15 bg-tengu-dark/5 px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark/40"
+              >
+                Transferencia · Khipu
+              </button>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-tengu-mustard px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
+                Próximamente
+              </span>
+            </div>
           </div>
           <p className="mt-3 text-center text-xs text-tengu-dark/50">
-            🔒 Pago seguro · Procesado por la pasarela elegida
+            🔒 Pago seguro vía BanchilePagos
           </p>
           <p className="mt-1 text-center text-xs text-tengu-dark/40">
-            Webpay: tarjetas crédito/débito · Khipu: transferencia bancaria
+            Al pagar te llevamos al portal del banco. El pedido queda confirmado cuando recibimos comprobante.
           </p>
         </aside>
       </div>
