@@ -5,6 +5,7 @@ import AnnouncementBar from './components/AnnouncementBar';
 import CookieBanner from './components/CookieBanner';
 import Footer from './components/Footer';
 import Header from './components/Header';
+import ScrollToTop from './components/ScrollToTop';
 import NewsletterPopup from './components/NewsletterPopup';
 import WhatsAppFab from './components/WhatsAppFab';
 import About from './routes/About';
@@ -49,6 +50,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <ScrollToTop />
       <AnalyticsBootstrap />
       {!isAdmin && <AnnouncementBar />}
       {!isAdmin && <Header />}

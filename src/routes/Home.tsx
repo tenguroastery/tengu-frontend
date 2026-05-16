@@ -13,9 +13,11 @@ type OriginStory = {
   flag: string;
   headline: string;
   body: string;
-  image: string;
 };
 
+// La imagen de cada origen sale del producto vivo en DB (primer match por
+// origin). Si no hay productos publicados para ese origen, la historia se
+// oculta — así al eliminar todo de un origen desaparece del Home automático.
 const STORIES: OriginStory[] = [
   {
     code: 'Colombia',
@@ -23,7 +25,6 @@ const STORIES: OriginStory[] = [
     flag: '🇨🇴',
     headline: 'Caldas · Huila · Risaralda',
     body: 'Pequeñas fincas en altura, recolección manual y procesos lavados o naturales. Notas dulces a chocolate y caramelo.',
-    image: 'familia-zambrano-colombia.jpg',
   },
   {
     code: 'Perú',
@@ -31,7 +32,6 @@ const STORIES: OriginStory[] = [
     flag: '🇵🇪',
     headline: 'Cajamarca · Pangoa',
     body: 'Cafés cooperativos a más de 1.700 m.s.n.m. Cuerpo cremoso, perfil cítrico y dulzor de panela.',
-    image: 'peru-cajamarca-el-bambu.jpg',
   },
   {
     code: 'Rwanda',
@@ -39,7 +39,6 @@ const STORIES: OriginStory[] = [
     flag: '🇷🇼',
     headline: 'Sur de Rwanda',
     body: 'Bourbon Rojo de Marie Gorette, lavado y natural. Frutos rojos brillantes, retrogusto limpio.',
-    image: 'rwanda-marie-gorette-natural.jpg',
   },
 ];
 
@@ -103,29 +102,34 @@ export default function Home() {
         </div>
 
         <div className="mt-12 grid gap-8 md:grid-cols-3">
-          {STORIES.map((story) => (
-            <article key={story.code} className="group relative overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <div className="aspect-[4/5] overflow-hidden bg-tengu-cream">
-                <img
-                  src={`/uploads/${story.image}`}
-                  alt={`Café de ${story.name} — Tengu Roastery`}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  loading="lazy"
-                  decoding="async"
-                  width={400}
-                  height={500}
-                />
-              </div>
-              <div className="p-6">
-                <p className="text-3xl">{story.flag}</p>
-                <h3 className="mt-2 font-display text-2xl">{story.name}</h3>
-                <p className="mt-1 text-xs uppercase tracking-wider text-tengu-mustard">
-                  {story.headline}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-tengu-dark/70">{story.body}</p>
-              </div>
-            </article>
-          ))}
+          {STORIES.map((story) => {
+            // Imagen viene de un producto vivo del origen. Si no hay ninguno, la historia se oculta.
+            const product = products.find((p) => p.origin === story.code && p.image);
+            if (!product) return null;
+            return (
+              <article key={story.code} className="group relative overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                <div className="aspect-[4/5] overflow-hidden bg-tengu-cream">
+                  <img
+                    src={`/uploads/${product.image}`}
+                    alt={`Café de ${story.name} — Tengu Roastery`}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                    width={400}
+                    height={500}
+                  />
+                </div>
+                <div className="p-6">
+                  <p className="text-3xl">{story.flag}</p>
+                  <h3 className="mt-2 font-display text-2xl">{story.name}</h3>
+                  <p className="mt-1 text-xs uppercase tracking-wider text-tengu-mustard">
+                    {story.headline}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-tengu-dark/70">{story.body}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
