@@ -22,6 +22,8 @@ import AdminLogin from './routes/admin/Login';
 import AdminLoginVerify from './routes/admin/LoginVerify';
 import AdminOrders from './routes/admin/Orders';
 import AdminProducts from './routes/admin/Products';
+import AdminSettings from './routes/admin/Settings';
+import AdminShipping from './routes/admin/Shipping';
 import AdminSubscriptions from './routes/admin/Subscriptions';
 import Cart from './routes/Cart';
 import Checkout from './routes/Checkout';
@@ -91,6 +93,8 @@ export default function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="coffee-subscriptions" element={<AdminCoffeeSubscriptions />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />
+            <Route path="shipping" element={<AdminShipping />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

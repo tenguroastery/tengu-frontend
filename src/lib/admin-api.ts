@@ -1,5 +1,5 @@
 import { useAdmin } from '../store/admin';
-import type { Order } from '../types';
+import type { Order, SiteSettings } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
@@ -198,4 +198,54 @@ export const adminApi = {
     }),
   processCoffeeSubscription: (id: number) =>
     request<ProcessSubOut>(`/admin/coffee-subscriptions/${id}/process`, { method: 'POST' }),
+
+  // --- Site settings + shipping ---
+  getSiteSettings: () => request<SiteSettings>('/admin/site/settings'),
+  patchSiteSettings: (patch: Partial<SiteSettings>) =>
+    request<SiteSettings>('/admin/site/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    }),
+  listShippingRates: () => request<AdminShippingRate[]>('/admin/site/shipping-rates'),
+  patchShippingRate: (id: number, price_clp: number) =>
+    request<AdminShippingRate>(`/admin/site/shipping-rates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ price_clp }),
+    }),
+  listComunaZones: () => request<AdminComunaZone[]>('/admin/site/comuna-zones'),
+  createComunaZone: (payload: AdminComunaZoneIn) =>
+    request<AdminComunaZone>('/admin/site/comuna-zones', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  patchComunaZone: (id: number, payload: AdminComunaZoneIn) =>
+    request<AdminComunaZone>(`/admin/site/comuna-zones/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+  deleteComunaZone: (id: number) =>
+    request<void>(`/admin/site/comuna-zones/${id}`, { method: 'DELETE' }),
+};
+
+export type AdminShippingRate = {
+  id: number;
+  size_band: string;
+  zone: string;
+  mode: string;
+  weight_min_g: number;
+  weight_max_g: number;
+  price_clp: number;
+};
+
+export type AdminComunaZone = {
+  id: number;
+  region: string;
+  comuna: string | null;
+  zone: string;
+};
+
+export type AdminComunaZoneIn = {
+  region: string;
+  comuna?: string | null;
+  zone: 'ohiggins' | 'centro_otros' | 'extremo';
 };
