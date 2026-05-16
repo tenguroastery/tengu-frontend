@@ -3,7 +3,6 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
-import { useAuth } from '../store/auth';
 import { useCart } from '../store/cart';
 import type { Order } from '../types';
 
@@ -47,7 +46,6 @@ export default function Thanks() {
   const [error, setError] = useState<string | null>(null);
 
   const clearCart = useCart((s) => s.clear);
-  const isAuthed = useAuth((s) => !!s.jwt);
 
   useEffect(() => {
     if (!orderId) return;
@@ -204,21 +202,6 @@ export default function Thanks() {
           )}
         </div>
       </div>
-
-      {!isAuthed && (
-        <div className="mt-8 rounded-xl bg-tengu-cream p-6">
-          <p className="text-sm">
-            Ya creamos tu cuenta con <strong>{order.customer_email}</strong> — todos tus
-            datos quedan guardados. La próxima vez que compres se prellenan solos.
-          </p>
-          <Link
-            to="/cuenta/login"
-            className="mt-3 inline-block text-sm font-semibold text-tengu-ink hover:underline"
-          >
-            Entrar a mi cuenta →
-          </Link>
-        </div>
-      )}
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link

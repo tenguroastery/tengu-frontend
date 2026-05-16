@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
@@ -300,16 +300,6 @@ export default function Checkout() {
       <p className="mt-1 text-sm text-tengu-dark/60">
         Procesamos tu pago vía <strong>BanchilePagos</strong>. Webpay y Khipu llegan pronto.
       </p>
-
-      {!jwt && (
-        <div className="mt-4 rounded-md border border-tengu-ink/15 bg-tengu-ink/5 px-4 py-3 text-sm">
-          <strong>¿Tienes cuenta o quieres crear una?</strong>{' '}
-          <Link to="/cuenta/login" className="font-semibold text-tengu-ink hover:underline">
-            Entrá con tu email
-          </Link>{' '}
-          y te prellenamos los datos. Tu cuenta se crea sola, sin contraseña.
-        </div>
-      )}
 
       {freeShippingThreshold > 0 && (
         <div
