@@ -75,6 +75,11 @@ export const api = {
     request<void>('/auth/request-link', { method: 'POST', body: JSON.stringify({ email }) }),
   verifyMagicLink: (token: string) =>
     request<{ jwt: string; email: string }>(`/auth/verify?token=${encodeURIComponent(token)}`),
+  googleLogin: (idToken: string) =>
+    request<{ jwt: string; email: string }>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ id_token: idToken }),
+    }),
   getMe: (jwt: string) => request<CustomerProfile>('/auth/me', undefined, jwt),
   patchMe: (jwt: string, patch: Partial<CustomerProfile>) =>
     request<CustomerProfile>('/auth/me', { method: 'PATCH', body: JSON.stringify(patch) }, jwt),

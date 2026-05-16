@@ -1,13 +1,40 @@
+import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { api } from '../../lib/api';
+import { useAuth } from '../../store/auth';
+
+const HAS_GOOGLE = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 export default function CuentaLogin() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+  const setSession = useAuth((s) => s.setSession);
+  const setCustomer = useAuth((s) => s.setCustomer);
+
+  const handleGoogle = async (idToken: string | undefined) => {
+    if (!idToken) {
+      setError('No recibimos credencial de Google.');
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      const { jwt } = await api.googleLogin(idToken);
+      setSession(jwt);
+      const me = await api.getMe(jwt);
+      setCustomer(me);
+      navigate('/cuenta');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,11 +76,31 @@ export default function CuentaLogin() {
     <section className="mx-auto max-w-md px-6 py-20">
       <h1 className="font-display text-3xl">Entrar o crear cuenta</h1>
       <p className="mt-2 text-sm text-tengu-dark/70">
-        Te mandamos un link mágico al correo. Sin contraseña.
-        Si es tu primera vez, te creamos la cuenta automáticamente.
+        Sin contraseña. Si es tu primera vez te creamos la cuenta automáticamente.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+      {HAS_GOOGLE && (
+        <>
+          <div className="mt-8 flex justify-center">
+            <GoogleLogin
+              onSuccess={(resp) => handleGoogle(resp.credential)}
+              onError={() => setError('No pudimos entrar con Google.')}
+              theme="outline"
+              size="large"
+              text="continue_with"
+              shape="rectangular"
+              width="320"
+            />
+          </div>
+          <div className="my-6 flex items-center gap-4 text-xs uppercase tracking-wider text-tengu-dark/40">
+            <div className="h-px flex-1 bg-tengu-dark/10" />
+            o con tu email
+            <div className="h-px flex-1 bg-tengu-dark/10" />
+          </div>
+        </>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block">
           <span className="mb-1 block text-xs uppercase tracking-wider text-tengu-dark/70">
             Email
