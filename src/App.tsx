@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 
 import AnalyticsBootstrap from './components/AnalyticsBootstrap';
+import AnnouncementBar from './components/AnnouncementBar';
 import CookieBanner from './components/CookieBanner';
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <div className="flex min-h-dvh flex-col">
       <AnalyticsBootstrap />
+      {!isAdmin && <AnnouncementBar />}
       {!isAdmin && <Header />}
       <main className="flex-1">
         <Routes>

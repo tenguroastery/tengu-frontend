@@ -8,17 +8,12 @@ import {
   WhatsAppLink,
   tenguContact,
 } from './SocialIcons';
-import { useSiteSettings } from '../store/site';
 
 export default function Footer() {
-  const settings = useSiteSettings();
+  // Banner promocional fue movido a AnnouncementBar (cinta superior estándar
+  // ecommerce). Footer queda con solo el contenido principal.
   return (
     <footer className="mt-24 bg-tengu-dark text-tengu-cream">
-      {settings && (
-        <div className="border-b border-white/10 bg-tengu-ink/10 py-3 text-center text-xs uppercase tracking-wider text-tengu-mustard">
-          Tostamos los {settings.roast_day} · despachamos {settings.ship_days}
-        </div>
-      )}
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <p className="font-display text-2xl tracking-wider">TENGU ROASTERY</p>
