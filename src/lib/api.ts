@@ -1,3 +1,4 @@
+import type { CustomerProfile } from '../store/auth';
 import type {
   CoffeeSubscription,
   KhipuInit,
@@ -14,11 +15,11 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
+async function request<T>(path: string, init?: RequestInit, jwt?: string | null): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (jwt) headers.Authorization = `Bearer ${jwt}`;
+  if (init?.headers) Object.assign(headers, init.headers as Record<string, string>);
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
   if (!res.ok) {
     let detail = `${res.status} ${res.statusText}`;
     try {
@@ -27,6 +28,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch { /* keep default */ }
     throw new Error(detail);
   }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
@@ -67,6 +69,16 @@ export const api = {
   reviewSummary: (productSlug: string) => request<ReviewSummary>(`/reviews/${productSlug}/summary`),
   submitReview: (payload: ReviewSubmit) =>
     request<Review>('/reviews', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // --- Auth de cliente (magic link) ---
+  requestMagicLink: (email: string) =>
+    request<void>('/auth/request-link', { method: 'POST', body: JSON.stringify({ email }) }),
+  verifyMagicLink: (token: string) =>
+    request<{ jwt: string; email: string }>(`/auth/verify?token=${encodeURIComponent(token)}`),
+  getMe: (jwt: string) => request<CustomerProfile>('/auth/me', undefined, jwt),
+  patchMe: (jwt: string, patch: Partial<CustomerProfile>) =>
+    request<CustomerProfile>('/auth/me', { method: 'PATCH', body: JSON.stringify(patch) }, jwt),
+  listMyOrders: (jwt: string) => request<Order[]>('/auth/me/orders', undefined, jwt),
 };
 
 export function formatCLP(value: number): string {

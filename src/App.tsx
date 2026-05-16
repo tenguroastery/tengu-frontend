@@ -26,6 +26,9 @@ import AdminSubscriptions from './routes/admin/Subscriptions';
 import Cart from './routes/Cart';
 import Checkout from './routes/Checkout';
 import CheckoutError from './routes/CheckoutError';
+import CuentaCallback from './routes/cuenta/Callback';
+import CuentaDashboard from './routes/cuenta/Dashboard';
+import CuentaLogin from './routes/cuenta/Login';
 import Home from './routes/Home';
 import KhipuReturn from './routes/KhipuReturn';
 import Privacy from './routes/legal/Privacy';
@@ -56,6 +59,9 @@ export default function App() {
           <Route path="/checkout/khipu/return" element={<KhipuReturn />} />
           <Route path="/thanks/:orderId" element={<Thanks />} />
           <Route path="/checkout/error" element={<CheckoutError />} />
+          <Route path="/cuenta/login" element={<CuentaLogin />} />
+          <Route path="/cuenta/callback" element={<CuentaCallback />} />
+          <Route path="/cuenta" element={<CuentaDashboard />} />
           <Route path="/sobre-nosotros" element={<About />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:slug" element={<BlogPost />} />

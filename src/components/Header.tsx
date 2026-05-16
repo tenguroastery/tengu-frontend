@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
 
 import { InstagramIcon, InstagramLink } from './SocialIcons';
+import { selectIsAuthed, useAuth } from '../store/auth';
 import { selectCartCount, useCart } from '../store/cart';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -10,6 +11,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 
 export default function Header() {
   const count = useCart(selectCartCount);
+  const isAuthed = useAuth(selectIsAuthed);
 
   return (
     <header className="sticky top-0 z-40 bg-tengu-dark/95 text-tengu-cream backdrop-blur supports-[backdrop-filter]:bg-tengu-dark/85">
@@ -27,6 +29,9 @@ export default function Header() {
           <InstagramLink className="text-tengu-cream/70 transition hover:text-tengu-mustard">
             <InstagramIcon size={20} />
           </InstagramLink>
+          <NavLink to={isAuthed ? '/cuenta' : '/cuenta/login'} className={navClass} aria-label="Mi cuenta">
+            <UserIcon />
+          </NavLink>
           <NavLink to="/carrito" className={navClass}>
             <span className="inline-flex items-center gap-2">
               <CartIcon />
@@ -49,6 +54,15 @@ function CartIcon() {
       <path d="M3 3h2l2.4 12.5a2 2 0 0 0 2 1.5h7.7a2 2 0 0 0 2-1.6L21 8H6" />
       <circle cx="9" cy="21" r="1.5" />
       <circle cx="18" cy="21" r="1.5" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }

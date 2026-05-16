@@ -1,10 +1,45 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
+import { useAuth } from '../store/auth';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import type { ShippingMethod } from '../types';
+
+const PREFILL_KEY = 'tengu-checkout-prefill-v1';
+
+type PrefillForm = {
+  customer_email: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_rut: string;
+  shipping_address: string;
+  shipping_comuna: string;
+  shipping_region: string;
+  shipping_notes: string;
+};
+
+const EMPTY_FORM: PrefillForm = {
+  customer_email: '',
+  customer_name: '',
+  customer_phone: '',
+  customer_rut: '',
+  shipping_address: '',
+  shipping_comuna: '',
+  shipping_region: 'Región Metropolitana',
+  shipping_notes: '',
+};
+
+function loadLocalPrefill(): PrefillForm {
+  try {
+    const raw = localStorage.getItem(PREFILL_KEY);
+    if (!raw) return EMPTY_FORM;
+    return { ...EMPTY_FORM, ...(JSON.parse(raw) as Partial<PrefillForm>) };
+  } catch {
+    return EMPTY_FORM;
+  }
+}
 
 const SHIPPING_OPTIONS: { value: ShippingMethod; label: string; cost: number; help: string }[] = [
   { value: 'rm', label: 'Despacho Región Metropolitana', cost: 3500, help: '2-3 días hábiles' },
@@ -35,18 +70,46 @@ export default function Checkout() {
   const items = useCart((s) => s.items);
   const subtotal = useCart(selectCartSubtotal);
   const navigate = useNavigate();
+  const jwt = useAuth((s) => s.jwt);
+  const customer = useAuth((s) => s.customer);
 
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('rm');
-  const [form, setForm] = useState({
-    customer_email: '',
-    customer_name: '',
-    customer_phone: '',
-    customer_rut: '',
-    shipping_address: '',
-    shipping_comuna: '',
-    shipping_region: 'Región Metropolitana',
-    shipping_notes: '',
-  });
+  const [form, setForm] = useState<PrefillForm>(() => loadLocalPrefill());
+
+  // Si hay sesión, prellena con datos del customer (gana sobre localStorage)
+  useEffect(() => {
+    if (!jwt) return;
+    api.getMe(jwt).then((me) => {
+      setForm((f) => ({
+        ...f,
+        customer_email: me.email,
+        customer_name: me.name ?? f.customer_name,
+        customer_phone: me.phone ?? f.customer_phone,
+        customer_rut: me.rut ?? f.customer_rut,
+        shipping_address: me.shipping_address ?? f.shipping_address,
+        shipping_comuna: me.shipping_comuna ?? f.shipping_comuna,
+        shipping_region: me.shipping_region ?? f.shipping_region,
+        shipping_notes: me.shipping_notes ?? f.shipping_notes,
+      }));
+    }).catch(() => {
+      // JWT inválido/vencido: ignoramos, queda el prefill de localStorage
+    });
+  }, [jwt]);
+
+  // Si ya teníamos customer en el store, úsalo de entrada (evita flash)
+  useEffect(() => {
+    if (!customer) return;
+    setForm((f) => ({
+      customer_email: customer.email || f.customer_email,
+      customer_name: customer.name || f.customer_name,
+      customer_phone: customer.phone || f.customer_phone,
+      customer_rut: customer.rut || f.customer_rut,
+      shipping_address: customer.shipping_address || f.shipping_address,
+      shipping_comuna: customer.shipping_comuna || f.shipping_comuna,
+      shipping_region: customer.shipping_region || f.shipping_region,
+      shipping_notes: customer.shipping_notes || f.shipping_notes,
+    }));
+  }, [customer]);
   const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer'>(null);
   const [error, setError] = useState<string | null>(null);
   const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
@@ -100,6 +163,14 @@ export default function Checkout() {
       total,
     );
     try {
+      // Guarda prefill para próximas compras (excluye notas porque cambian)
+      try {
+        localStorage.setItem(
+          PREFILL_KEY,
+          JSON.stringify({ ...form, shipping_notes: '' }),
+        );
+      } catch { /* localStorage lleno o desactivado: ignorar */ }
+
       const order = await api.createOrder({
         customer_email: form.customer_email.trim(),
         customer_name: form.customer_name.trim(),
@@ -156,6 +227,16 @@ export default function Checkout() {
       <p className="mt-1 text-sm text-tengu-dark/60">
         Procesamos tu pago vía <strong>BanchilePagos</strong>. Webpay y Khipu llegan pronto.
       </p>
+
+      {!jwt && (
+        <div className="mt-4 rounded-md border border-tengu-ink/15 bg-tengu-ink/5 px-4 py-3 text-sm">
+          ¿Ya compraste antes?{' '}
+          <Link to="/cuenta/login" className="font-semibold text-tengu-ink hover:underline">
+            Entra a tu cuenta
+          </Link>{' '}
+          para prellenar tus datos.
+        </div>
+      )}
 
       <div className="mt-8 grid gap-10 md:grid-cols-[1fr_360px]">
         <div className="space-y-8">
