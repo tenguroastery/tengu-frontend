@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useSeo } from '../lib/seo';
+import { useSiteSettings } from '../store/site';
 
 const BUSINESS_TYPES = ['Cafetería', 'Restaurant', 'Hotel', 'Oficina', 'Marca propia', 'Otro'];
 
@@ -12,6 +13,9 @@ export default function Horeca() {
       'Café de especialidad para cafeterías, restaurantes, hoteles y oficinas. Precios mayoristas, asesoría barista y opción de marca blanca. Cotiza con Tengu Roastery.',
     canonical: '/horeca',
   });
+  const siteSettings = useSiteSettings();
+  const minKg = siteSettings?.wholesale_min_kg ?? 5;
+  const wholesaleMsg = siteSettings?.wholesale_lead_msg ?? '';
 
   const [form, setForm] = useState({
     company: '',
@@ -63,6 +67,12 @@ export default function Horeca() {
             especialidad fresco, trazable y con asesoría real. Precios mayoristas y volumen
             adaptado a tu rotación.
           </p>
+          <p className="mt-4 inline-block rounded-full bg-tengu-mustard px-4 py-1.5 text-sm font-semibold text-tengu-dark">
+            Cotización mayorista · desde {minKg} kg
+          </p>
+          {wholesaleMsg && (
+            <p className="mt-3 max-w-2xl text-sm text-tengu-cream/70">{wholesaleMsg}</p>
+          )}
         </div>
       </section>
 
