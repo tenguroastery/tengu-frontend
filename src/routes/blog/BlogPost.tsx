@@ -140,7 +140,7 @@ export default function BlogPost() {
       <footer className="mt-16 rounded-2xl bg-tengu-cream/40 p-8 text-center">
         <p className="font-display text-xl">¿Pruebas un café?</p>
         <p className="mt-2 text-sm text-tengu-dark/70">
-          Recibe -10% en tu primera compra suscribiéndote al newsletter.
+          Descubre todos los orígenes en la tienda.
         </p>
         <Link
           to="/tienda"

@@ -16,6 +16,15 @@ const STATUS_COLOR: Record<Status, string> = {
   canceled: 'bg-tengu-dark/10 text-tengu-dark/60',
 };
 
+const STATUS_LABEL: Record<Status, string> = {
+  pending: 'Pendiente',
+  paid: 'Pagado',
+  shipped: 'Enviado',
+  delivered: 'Entregado',
+  failed: 'Fallado',
+  canceled: 'Cancelado',
+};
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<'all' | Status>('all');
@@ -54,7 +63,7 @@ export default function AdminOrders() {
               filter === s ? 'bg-tengu-ink text-white' : 'bg-white hover:bg-tengu-ink/10'
             }`}
           >
-            {s === 'all' ? 'Todos' : s}
+            {s === 'all' ? 'Todos' : STATUS_LABEL[s]}
           </button>
         ))}
       </div>
@@ -71,7 +80,7 @@ export default function AdminOrders() {
                 <th className="px-4 py-3">#</th>
                 <th className="px-4 py-3">Cliente</th>
                 <th className="px-4 py-3">Total</th>
-                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -87,8 +96,8 @@ export default function AdminOrders() {
                     </td>
                     <td className="px-4 py-3 font-semibold">{formatCLP(o.total_clp)}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs uppercase tracking-wider ${STATUS_COLOR[o.status as Status]}`}>
-                        {o.status}
+                      <span className={`rounded-full px-2 py-0.5 text-xs uppercase tracking-wider ${STATUS_COLOR[o.status as Status] ?? ''}`}>
+                        {STATUS_LABEL[o.status as Status] ?? o.status}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-tengu-dark/60">
@@ -144,7 +153,7 @@ function OrderDetail({
         </ul>
         <dl className="mt-4 space-y-1 text-sm">
           <div className="flex justify-between"><dt className="text-tengu-dark/60">Subtotal</dt><dd>{formatCLP(order.subtotal_clp)}</dd></div>
-          <div className="flex justify-between"><dt className="text-tengu-dark/60">Envío ({order.shipping_method})</dt><dd>{formatCLP(order.shipping_cost_clp)}</dd></div>
+          <div className="flex justify-between"><dt className="text-tengu-dark/60">Envío ({order.shipping_method === 'pickup' ? 'retiro' : 'despacho'})</dt><dd>{formatCLP(order.shipping_cost_clp)}</dd></div>
           <div className="flex justify-between border-t border-tengu-dark/10 pt-1 font-semibold"><dt>Total</dt><dd className="text-tengu-ink">{formatCLP(order.total_clp)}</dd></div>
         </dl>
       </div>
@@ -164,12 +173,12 @@ function OrderDetail({
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-wider text-tengu-dark/60">Cambiar status</p>
+          <p className="text-xs uppercase tracking-wider text-tengu-dark/60">Cambiar estado</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {STATUS_OPTIONS.map((s) => (
               <button
                 key={s}
-                onClick={() => onUpdate({ status: s })}
+                onClick={() => onUpdate({ status: s }).catch((err) => alert(`Error: ${err}`))}
                 disabled={order.status === s}
                 className={`rounded-md border px-3 py-1 text-xs uppercase tracking-wider transition ${
                   order.status === s
@@ -177,14 +186,14 @@ function OrderDetail({
                     : 'border-tengu-dark/15 hover:border-tengu-ink'
                 }`}
               >
-                {s}
+                {STATUS_LABEL[s]}
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="block text-xs uppercase tracking-wider text-tengu-dark/60">Tracking code</label>
+          <label className="block text-xs uppercase tracking-wider text-tengu-dark/60">Código de seguimiento</label>
           <div className="mt-1 flex gap-2">
             <input
               value={tracking}
@@ -193,7 +202,7 @@ function OrderDetail({
               placeholder="ej: CHX1234567"
             />
             <button
-              onClick={() => onUpdate({ tracking_code: tracking })}
+              onClick={() => onUpdate({ tracking_code: tracking }).catch((err) => alert(`Error: ${err}`))}
               className="rounded-md bg-tengu-ink px-3 py-1.5 text-xs uppercase tracking-wider text-white"
             >
               Guardar
@@ -206,7 +215,11 @@ function OrderDetail({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            onBlur={() => onUpdate({ admin_notes: notes })}
+            onBlur={() => {
+              if (notes !== (order.admin_notes ?? '')) {
+                onUpdate({ admin_notes: notes }).catch((err) => alert(`Error: ${err}`));
+              }
+            }}
             rows={2}
             className="mt-1 w-full rounded-md border border-tengu-dark/15 px-3 py-1.5 text-sm"
           />

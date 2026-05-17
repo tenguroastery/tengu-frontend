@@ -29,7 +29,7 @@ export default function CoffeeSubscriptions() {
     if (filter === 'all') return true;
     if (filter === 'active') return s.is_active;
     if (filter === 'paused') return !s.is_active;
-    if (filter === 'canceled') return !s.is_active && !s.next_charge_at;
+    if (filter === 'canceled') return Boolean(s.canceled_at);
     if (filter === 'due') {
       if (!s.is_active || !s.next_charge_at) return false;
       return new Date(s.next_charge_at) <= new Date();
@@ -51,6 +51,8 @@ export default function CoffeeSubscriptions() {
     try {
       const updated = await adminApi.updateCoffeeSubscription(id, payload);
       setSubs((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error actualizando suscripción');
     } finally {
       setBusy(null);
     }
@@ -94,7 +96,7 @@ export default function CoffeeSubscriptions() {
         <div>
           <h1 className="font-display text-3xl">Suscripciones café</h1>
           <p className="mt-1 text-sm text-tengu-dark/60">
-            Entregas recurrentes tipo ShaveClub. {stats.total} totales · {stats.active} activas · {stats.due} con cargo vencido
+            Entregas recurrentes mensuales/bimestrales. {stats.total} totales · {stats.active} activas · {stats.due} con cargo vencido
           </p>
         </div>
         <button onClick={reload} className="text-xs uppercase tracking-wider text-tengu-ink hover:underline">↻ Recargar</button>
@@ -274,7 +276,11 @@ function SubDetail({
                 className="rounded-md border border-tengu-dark/15 px-3 py-1.5 text-sm"
               />
               <button
-                onClick={() => onUpdateNextCharge(new Date(nextDateInput).toISOString())}
+                onClick={() => {
+                  // YYYY-MM-DD se parsea como UTC midnight → en Chile sería el día previo.
+                  // Anclamos al mediodía local para que la fecha mostrada quede estable.
+                  onUpdateNextCharge(new Date(`${nextDateInput}T12:00:00`).toISOString());
+                }}
                 disabled={busy || !nextDateInput}
                 className="rounded-md bg-tengu-ink px-3 py-1.5 text-xs uppercase tracking-wider text-white disabled:opacity-50"
               >
@@ -288,8 +294,12 @@ function SubDetail({
           <label className="block">
             <span className="text-xs uppercase tracking-wider text-tengu-dark/60">Notas internas</span>
             <textarea
-              defaultValue={''}
-              onBlur={(e) => e.target.value && onUpdateNotes(e.target.value)}
+              defaultValue={sub.admin_notes ?? ''}
+              onBlur={(e) => {
+                if (e.target.value !== (sub.admin_notes ?? '')) {
+                  onUpdateNotes(e.target.value);
+                }
+              }}
               rows={2}
               className="mt-1 w-full rounded-md border border-tengu-dark/15 px-3 py-1.5 text-sm"
               placeholder="ej: cliente cambió preferencia a Rwanda, confirmar por mail"

@@ -9,13 +9,17 @@ export default function AdminSubscriptions() {
   const jwt = useAdmin((s) => s.jwt);
 
   useEffect(() => {
-    adminApi.listSubscriptions().then(setSubs).finally(() => setLoading(false));
+    adminApi.listSubscriptions()
+      .then(setSubs)
+      .catch((err) => alert(`Error cargando suscriptores: ${err}`))
+      .finally(() => setLoading(false));
   }, []);
 
   const downloadCsv = async () => {
     if (!jwt) return;
     // El endpoint requiere Bearer; abrimos como blob y forzamos download.
-    const res = await fetch(`/api/admin/subscriptions/export.csv`, {
+    const base = import.meta.env.VITE_API_BASE ?? '/api';
+    const res = await fetch(`${base}/admin/subscriptions/export.csv`, {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     if (!res.ok) {
@@ -57,7 +61,7 @@ export default function AdminSubscriptions() {
             <thead className="bg-tengu-cream/40 text-left text-xs uppercase tracking-wider text-tengu-dark/60">
               <tr>
                 <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Inscripto</th>
+                <th className="px-4 py-3">Inscrito</th>
               </tr>
             </thead>
             <tbody>

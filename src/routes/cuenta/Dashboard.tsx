@@ -16,6 +16,7 @@ export default function CuentaDashboard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -66,10 +67,13 @@ export default function CuentaDashboard() {
     e.preventDefault();
     if (!jwt) return;
     setSaving(true);
+    setSaveError(null);
     try {
       const updated = await api.patchMe(jwt, form);
       setCustomer(updated);
       setSavedAt(Date.now());
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'No pudimos guardar los cambios.');
     } finally {
       setSaving(false);
     }
@@ -144,8 +148,11 @@ export default function CuentaDashboard() {
             >
               {saving ? 'Guardando…' : 'Guardar cambios'}
             </button>
-            {savedAt && Date.now() - savedAt < 5000 && (
+            {savedAt && !saveError && Date.now() - savedAt < 5000 && (
               <span className="text-sm text-tengu-ink">✓ Guardado</span>
+            )}
+            {saveError && (
+              <span className="text-sm text-tengu-coral">{saveError}</span>
             )}
           </div>
         </form>

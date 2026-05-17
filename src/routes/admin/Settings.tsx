@@ -51,7 +51,7 @@ export default function AdminSettings() {
 
       <div className="mt-8 space-y-6 rounded-xl bg-white p-6 shadow-sm">
         <Section title="Envíos">
-          <Field label="Umbral envío gratis (CLP)" hint="Si subtotal ≥ este monto, el envío es gratis. Poné 0 para desactivar.">
+          <Field label="Umbral envío gratis (CLP)" hint="Si subtotal ≥ este monto, el envío es gratis. Pon 0 para desactivar.">
             <input
               type="number"
               min={0}

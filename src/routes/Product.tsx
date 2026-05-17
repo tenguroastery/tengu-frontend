@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import Breadcrumbs from '../components/Breadcrumbs';
+import ReviewsSection from '../components/ReviewsSection';
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, pricePerKg } from '../lib/api';
 import { setStructuredData, useSeo } from '../lib/seo';
@@ -242,6 +243,8 @@ export default function Product() {
           </button>
         </div>
       </div>
+
+      <ReviewsSection productSlug={product.slug} productName={product.name} />
 
       {/* Spacer para que el sticky no tape el último contenido en mobile */}
       <div aria-hidden="true" className="h-24 md:hidden" />

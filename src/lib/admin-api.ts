@@ -19,7 +19,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (jwt) headers.set('Authorization', `Bearer ${jwt}`);
 
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (res.status === 401) {
+  // 403 también limpia sesión: el JWT puede ser válido pero el email ya no
+  // está en ADMIN_EMAILS (revocación del lado backend).
+  if (res.status === 401 || res.status === 403) {
     useAdmin.getState().clearSession();
     throw new AdminAuthError();
   }
@@ -126,6 +128,9 @@ export type AdminCoffeeSubscription = {
   last_charge_at: string | null;
   orders_count: number;
   first_order_id: number | null;
+  admin_notes?: string | null;
+  cancel_reason?: string | null;
+  canceled_at?: string | null;
   created_at: string;
 };
 

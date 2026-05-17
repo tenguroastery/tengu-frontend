@@ -13,7 +13,7 @@ export default function CuentaLogin() {
         Próximamente
       </p>
       <p className="mt-6 text-sm text-tengu-dark/70">
-        Estamos terminando el flujo de cuenta y suscripción. Mientras tanto, podés
+        Estamos terminando el flujo de cuenta y suscripción. Mientras tanto, puedes
         comprar como invitado — tus datos quedan guardados igual y la próxima vez
         coordinamos por WhatsApp.
       </p>
@@ -30,7 +30,7 @@ export default function CuentaLogin() {
           rel="noopener noreferrer"
           className="text-sm text-tengu-ink hover:underline"
         >
-          ¿Necesitas tu historial? Escribinos por WhatsApp →
+          ¿Necesitas tu historial? Escríbenos por WhatsApp →
         </a>
       </div>
     </section>

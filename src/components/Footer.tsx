@@ -62,7 +62,6 @@ export default function Footer() {
                 {tenguContact.phoneDisplay}
               </a>
             </li>
-            <li className="text-xs opacity-60">Sin endulzantes artificiales</li>
           </ul>
         </div>
       </div>

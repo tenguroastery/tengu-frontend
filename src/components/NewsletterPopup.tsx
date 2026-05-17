@@ -98,7 +98,7 @@ export default function NewsletterPopup() {
           <div className="p-8 sm:pr-4">
             <p className="text-xs uppercase tracking-[0.3em] text-tengu-mustard">Tengu Roastery</p>
             <h2 id="newsletter-popup-title" className="mt-3 font-display text-3xl leading-tight">
-              -10% en tu primera<br />compra
+              Café fresco<br />en tu correo
             </h2>
             <p className="mt-3 text-sm text-tengu-cream/80">
               Suscríbete y recibe novedades de nuevos orígenes, tueste de la semana y guías de
