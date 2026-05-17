@@ -85,6 +85,9 @@ export type PaymentMethod = 'webpay' | 'khipu' | 'bank_transfer';
 export type Order = {
   id: number;
   status: OrderStatus;
+  // Solo viene en la respuesta de POST /api/orders (no en GET). El cliente lo
+  // propaga a /thanks/{id}?token=... para autorizar la lectura del detalle.
+  access_token?: string;
   customer_email: string;
   customer_name: string;
   customer_phone: string;

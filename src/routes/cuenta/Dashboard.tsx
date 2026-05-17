@@ -163,7 +163,7 @@ export default function CuentaDashboard() {
               {orders.map((o) => (
                 <li key={o.id}>
                   <Link
-                    to={`/thanks/${o.id}`}
+                    to={o.access_token ? `/thanks/${o.id}?token=${encodeURIComponent(o.access_token)}` : `/thanks/${o.id}`}
                     className="block py-3 transition hover:bg-tengu-cream/40"
                   >
                     <div className="flex justify-between gap-2 text-sm">

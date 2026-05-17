@@ -41,6 +41,7 @@ export default function Thanks() {
   const { orderId } = useParams<{ orderId: string }>();
   const [params] = useSearchParams();
   const queryStatus = params.get('status');
+  const token = params.get('token');
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +49,12 @@ export default function Thanks() {
   const clearCart = useCart((s) => s.clear);
 
   useEffect(() => {
-    if (!orderId) return;
-    api.getOrder(Number(orderId))
+    if (!orderId || !token) {
+      setError('Falta el token de acceso a la orden.');
+      setLoading(false);
+      return;
+    }
+    api.getOrder(Number(orderId), token)
       .then((o) => {
         setOrder(o);
         if (o.status === 'paid') {
@@ -69,7 +74,7 @@ export default function Thanks() {
       })
       .catch((err) => setError(String(err)))
       .finally(() => setLoading(false));
-  }, [orderId, clearCart]);
+  }, [orderId, token, clearCart]);
 
   if (loading) {
     return (
@@ -88,14 +93,27 @@ export default function Thanks() {
     );
   }
 
-  const isBankTransfer =
-    params.get('method') === 'bank_transfer' || order.payment_method === 'bank_transfer';
-  const effectiveStatus = (queryStatus === 'paid' || queryStatus === 'failed' || queryStatus === 'canceled')
-    ? queryStatus
-    : isBankTransfer && order.status === 'pending'
-    ? 'pending_transfer'
-    : order.status;
-  const copy = STATUS_COPY[effectiveStatus as keyof typeof STATUS_COPY] ?? STATUS_COPY.pending;
+  // `order.payment_method` es la fuente de verdad (server-side). El query
+  // param solo se honra si el server lo confirma.
+  const isBankTransfer = order.payment_method === 'bank_transfer';
+
+  // Status mostrado al usuario: SIEMPRE deriva de `order.status` (lo que el
+  // backend dice). El queryStatus puede agregar contexto (canceled/failed
+  // venidos de Webpay return) pero nunca puede "promover" una orden pending
+  // a paid — ese flip lo decide el backend tras validar el pago.
+  let effectiveStatus: keyof typeof STATUS_COPY;
+  if (order.status === 'paid') {
+    effectiveStatus = 'paid';
+  } else if (order.status === 'failed' || queryStatus === 'failed') {
+    effectiveStatus = 'failed';
+  } else if (queryStatus === 'canceled') {
+    effectiveStatus = 'canceled';
+  } else if (isBankTransfer && order.status === 'pending') {
+    effectiveStatus = 'pending_transfer';
+  } else {
+    effectiveStatus = 'pending';
+  }
+  const copy = STATUS_COPY[effectiveStatus];
 
   return (
     <section className="mx-auto max-w-3xl px-6 py-16">

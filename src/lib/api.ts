@@ -47,7 +47,8 @@ export const api = {
     }),
   createOrder: (payload: OrderPayload) =>
     request<Order>('/orders', { method: 'POST', body: JSON.stringify(payload) }),
-  getOrder: (orderId: number) => request<Order>(`/orders/${orderId}`),
+  getOrder: (orderId: number, token: string) =>
+    request<Order>(`/orders/${orderId}?token=${encodeURIComponent(token)}`),
   initWebpay: (orderId: number) =>
     request<WebpayInit>('/checkout/webpay/init', {
       method: 'POST',

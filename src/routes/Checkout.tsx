@@ -95,6 +95,7 @@ export default function Checkout() {
   const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
+  const inFlightRef = useRef<boolean>(false);
 
   // Site settings (umbral envío gratis, etc.) — una sola vez
   useEffect(() => {
@@ -223,8 +224,15 @@ export default function Checkout() {
   };
 
   const handlePayment = async (method: 'webpay' | 'khipu' | 'bank_transfer') => {
+    // Guard contra doble-click: incluso si React no re-renderea el botón a
+    // tiempo, el ref bloquea el segundo click sincrónico.
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setError(null);
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      inFlightRef.current = false;
+      return;
+    }
     setSubmitting(method);
     ecommerceEvents.beginCheckout(
       items.map((i) => ({
@@ -271,11 +279,12 @@ export default function Checkout() {
         if (!target) throw new Error('Khipu no devolvió URL de pago');
         window.location.href = target;
       } else {
-        navigate(`/thanks/${order.id}?method=bank_transfer`);
+        navigate(`/thanks/${order.id}?method=bank_transfer&token=${order.access_token}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setSubmitting(null);
+      inFlightRef.current = false;
     }
   };
 
