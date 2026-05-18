@@ -51,16 +51,21 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
     adminApi.listCategories().then(setCategories).catch(() => {});
   }, []);
 
+  // Slug: solo [a-z0-9-]. Sanitiza on-the-fly para que el usuario no pueda
+  // tipear nada que el backend vaya a rechazar (mayúsculas, tildes, espacios).
+  // Mantiene guiones trailing mientras tipea; los recorta al submit.
+  const sanitizeSlug = (raw: string): string =>
+    raw
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-{2,}/g, '-');
+
   // Auto-generate slug from name on create
   useEffect(() => {
     if (mode === 'create' && name && !slug) {
-      const auto = name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '');
-      setSlug(auto);
+      setSlug(sanitizeSlug(name).replace(/(^-|-$)+/g, ''));
     }
   }, [name, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -88,7 +93,7 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
 
       const isCoffee = productKind === 'cafe';
       const payload: ProductCreatePayload = {
-        slug: slug.trim(),
+        slug: sanitizeSlug(slug).replace(/(^-|-$)+/g, ''),
         name: name.trim(),
         origin: origin.trim(),
         region: region.trim() || null,
@@ -208,12 +213,18 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
               <input
                 required
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+                onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
+                onBlur={(e) => setSlug(sanitizeSlug(e.target.value).replace(/(^-|-$)+/g, ''))}
                 disabled={mode === 'edit'}
                 pattern="[a-z0-9-]+"
                 placeholder="ej: rwanda-natural"
                 className={`${input} ${mode === 'edit' ? 'opacity-50' : ''}`}
               />
+              {mode === 'create' && (
+                <p className="mt-1 text-xs text-tengu-dark/50">
+                  Solo minúsculas, números y guiones. Se autocompleta desde el nombre.
+                </p>
+              )}
             </Field>
             <Field label="Categoría" required>
               <input
