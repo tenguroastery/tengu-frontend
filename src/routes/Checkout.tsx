@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
+import { validateRut } from '../lib/rut';
 import { useAuth } from '../store/auth';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import type { ShippingMethod, ShippingMode, ShippingQuote, SiteSettings } from '../types';
@@ -216,7 +217,11 @@ export default function Checkout() {
       setError('Completa todos los datos de contacto.');
       return false;
     }
-    if (selectedOption.method !== 'pickup' && (!form.shipping_address || !form.shipping_comuna)) {
+    if (!validateRut(form.customer_rut)) {
+      setError('El RUT no es válido. Verifica el dígito verificador.');
+      return false;
+    }
+    if (selectedOption.method !== 'pickup' && (!form.shipping_address?.trim() || !form.shipping_comuna?.trim())) {
       setError('Completa la dirección y comuna del despacho.');
       return false;
     }

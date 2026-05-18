@@ -18,6 +18,80 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
+// Mapeo Pydantic field name → label en español. Cubre los campos más
+// comunes; lo que no esté queda con el nombre técnico.
+const FIELD_LABELS_ES: Record<string, string> = {
+  customer_email: 'email',
+  customer_name: 'nombre',
+  customer_phone: 'teléfono',
+  customer_rut: 'RUT',
+  shipping_address: 'dirección',
+  shipping_comuna: 'comuna',
+  shipping_region: 'región',
+  shipping_notes: 'notas de despacho',
+  size_g: 'formato',
+  quantity: 'cantidad',
+  price_clp: 'precio',
+  stock_qty: 'stock',
+  weight_g: 'peso',
+  slug: 'identificador (slug)',
+  name: 'nombre',
+  category: 'categoría',
+  rating: 'puntuación',
+  body: 'comentario',
+  title: 'título',
+};
+
+type PydanticError = {
+  type: string;
+  loc: (string | number)[];
+  msg: string;
+  ctx?: Record<string, unknown>;
+};
+
+/** Convierte el `detail` de un response error (string, array Pydantic o dict)
+ * en un string legible en español. Exportado para uso desde admin-api.ts. */
+export function formatApiError(detail: unknown): string {
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) return formatPydanticError(detail as PydanticError[]);
+  return JSON.stringify(detail);
+}
+
+function formatPydanticError(detail: PydanticError[]): string {
+  const lines = detail.map((e) => {
+    // loc empieza con 'body' o 'query'; el último segmento string es el campo
+    const fieldName = [...e.loc].reverse().find((s) => typeof s === 'string' && s !== 'body' && s !== 'query');
+    const label = (typeof fieldName === 'string' && FIELD_LABELS_ES[fieldName]) || fieldName || 'campo';
+    // Traducimos los tipos de error más comunes; el resto cae al msg crudo.
+    switch (e.type) {
+      case 'string_pattern_mismatch':
+        return `El ${label} tiene un formato inválido.`;
+      case 'string_too_short':
+        return `El ${label} es demasiado corto.`;
+      case 'string_too_long':
+        return `El ${label} es demasiado largo.`;
+      case 'value_error':
+        // Aprovecha el mensaje del validator (ej. RUT módulo 11)
+        return `El ${label} no es válido: ${e.msg.replace(/^Value error,\s*/i, '')}`;
+      case 'greater_than':
+      case 'greater_than_equal':
+        return `El ${label} debe ser mayor.`;
+      case 'less_than':
+      case 'less_than_equal':
+        return `El ${label} excede el máximo permitido.`;
+      case 'missing':
+        return `Falta el campo ${label}.`;
+      case 'literal_error':
+        return `Valor inválido para ${label}.`;
+      case 'enum':
+        return `Valor inválido para ${label}.`;
+      default:
+        return `${label}: ${e.msg}`;
+    }
+  });
+  return lines.join(' ');
+}
+
 async function request<T>(path: string, init?: RequestInit, jwt?: string | null): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (jwt) headers.Authorization = `Bearer ${jwt}`;
@@ -27,7 +101,15 @@ async function request<T>(path: string, init?: RequestInit, jwt?: string | null)
     let detail = `${res.status} ${res.statusText}`;
     try {
       const body = await res.json();
-      if (body?.detail) detail = typeof body.detail === 'string' ? body.detail : JSON.stringify(body.detail);
+      if (body?.detail) {
+        if (typeof body.detail === 'string') {
+          detail = body.detail;
+        } else if (Array.isArray(body.detail)) {
+          detail = formatPydanticError(body.detail as PydanticError[]);
+        } else {
+          detail = JSON.stringify(body.detail);
+        }
+      }
     } catch { /* keep default */ }
     throw new Error(detail);
   }

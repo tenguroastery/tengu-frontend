@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import Breadcrumbs from '../components/Breadcrumbs';
 import { api, formatCLP, formatSize, pricePerKg } from '../lib/api';
+import { validateRut } from '../lib/rut';
 import { useSeo } from '../lib/seo';
 import type { Product, ShippingMethod } from '../types';
 
@@ -109,6 +110,10 @@ export default function Subscription() {
 
   const handlePayment = async (method: 'webpay' | 'khipu') => {
     setError(null);
+    if (!validateRut(form.customer_rut)) {
+      setError('El RUT no es válido. Verifica el dígito verificador.');
+      return;
+    }
     setSubmitting(method);
     try {
       const res = await api.createSubscription({

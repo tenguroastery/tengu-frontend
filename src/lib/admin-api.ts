@@ -1,3 +1,4 @@
+import { formatApiError } from './api';
 import { useAdmin } from '../store/admin';
 import type { Order, SiteSettings } from '../types';
 
@@ -29,7 +30,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     let detail = `${res.status} ${res.statusText}`;
     try {
       const body = await res.json();
-      if (body?.detail) detail = typeof body.detail === 'string' ? body.detail : JSON.stringify(body.detail);
+      if (body?.detail) detail = formatApiError(body.detail);
     } catch { /* ignore */ }
     throw new Error(detail);
   }
