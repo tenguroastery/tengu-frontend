@@ -17,9 +17,9 @@ export default function Privacy() {
       <section className="prose prose-sm mt-8 max-w-none text-tengu-dark/80">
         <h2 className="font-display text-xl text-tengu-dark">Quién recopila tus datos</h2>
         <p>
-          Tengu Roastery {'{{TODO: razón social}}'}, RUT {'{{TODO}}'}, con domicilio en {'{{TODO}}'},
-          es responsable del tratamiento de tus datos personales bajo la Ley 19.628 de Protección
-          de la Vida Privada de Chile.
+          Tengu Roastery SpA (RUT en trámite), con domicilio en Rancagua, Región del Libertador
+          General Bernardo O'Higgins, Chile, es responsable del tratamiento de tus datos personales
+          bajo la Ley 19.628 de Protección de la Vida Privada de Chile.
         </p>
 
         <h2 className="font-display text-xl text-tengu-dark">Qué datos recopilamos</h2>
@@ -52,8 +52,8 @@ export default function Privacy() {
 
         <h2 className="font-display text-xl text-tengu-dark">Pasarela de pago</h2>
         <p>
-          No almacenamos datos de tarjetas. El pago se procesa directamente en Webpay
-          (Transbank), Mercado Pago o Khipu, según el método elegido.
+          No almacenamos datos bancarios ni de tarjetas. El pago se procesa directamente en
+          BanchilePagos (Banco de Chile).
         </p>
       </section>
     </article>

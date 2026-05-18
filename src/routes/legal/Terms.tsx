@@ -17,14 +17,14 @@ export default function Terms() {
       <section className="prose prose-sm mt-8 max-w-none text-tengu-dark/80">
         <h2 className="font-display text-xl text-tengu-dark">Vendedor</h2>
         <p>
-          La venta es realizada por Tengu Roastery {'{{TODO: razón social}}'}, RUT {'{{TODO}}'},
-          con domicilio en {'{{TODO}}'}, Chile.
+          La venta es realizada por Tengu Roastery SpA (RUT en trámite), con domicilio en
+          Rancagua, Región del Libertador General Bernardo O'Higgins, Chile.
         </p>
 
         <h2 className="font-display text-xl text-tengu-dark">Precios y pago</h2>
         <p>
-          Todos los precios están expresados en pesos chilenos (CLP) con IVA incluido. Los medios
-          de pago aceptados son Webpay (Transbank), Mercado Pago y Khipu.
+          Todos los precios están expresados en pesos chilenos (CLP) con IVA incluido. El medio
+          de pago aceptado es BanchilePagos (Banco de Chile).
         </p>
 
         <h2 className="font-display text-xl text-tengu-dark">Despacho</h2>
