@@ -157,6 +157,11 @@ export const adminApi = {
 
   listProducts: () => request<AdminProduct[]>('/admin/products'),
   listCategories: () => request<string[]>('/admin/products/categories'),
+  restoreSeedImages: () =>
+    request<{ updated: { slug: string; image: string; score: number }[]; skipped: string[]; unmatched: string[] }>(
+      '/admin/products/restore-images',
+      { method: 'POST' },
+    ),
 
   // Category management (dedicated)
   listCategoryObjects: () => request<AdminCategory[]>('/admin/categories'),

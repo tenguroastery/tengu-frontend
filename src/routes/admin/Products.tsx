@@ -91,6 +91,21 @@ export default function AdminProducts() {
             ↻ Recargar
           </button>
           <button
+            onClick={async () => {
+              if (!confirm('Restaurar imágenes faltantes a las del seed inicial. Solo afecta productos cuya imagen actual da 404. ¿Continuar?')) return;
+              try {
+                const res = await adminApi.restoreSeedImages();
+                alert(`Actualizados: ${res.updated.length}. Sin match: ${res.unmatched.length || 'ninguno'}.`);
+                reload();
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              }
+            }}
+            className="text-xs uppercase tracking-wider text-tengu-ink hover:underline"
+          >
+            ↻ Restaurar fotos del seed
+          </button>
+          <button
             onClick={() => setFormMode('create')}
             className="rounded-md bg-tengu-mustard px-4 py-2 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
           >
