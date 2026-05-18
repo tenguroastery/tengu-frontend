@@ -433,10 +433,12 @@ function CategoryPicker({
   setCategory: (v: string) => void;
   categories: string[];
 }) {
-  // Si la categoría actual no está en la lista existente, asumimos que el
-  // usuario está creando una nueva → entramos en modo input free-text.
+  // 'creating' lo decide el usuario explícitamente al elegir "+ Crear nueva".
+  // No se infiere del estado, porque `categories` carga async y un default
+  // como "Filtrado" antes de cargar haría isExisting=false → trampa: el
+  // componente arranca en modo input y nunca vuelve al select.
+  const [creating, setCreating] = useState(false);
   const isExisting = categories.includes(category);
-  const [creating, setCreating] = useState(!isExisting && category !== '');
 
   if (creating) {
     return (
@@ -462,27 +464,27 @@ function CategoryPicker({
   }
 
   return (
-    <div className="flex gap-2">
-      <select
-        required
-        value={isExisting ? category : ''}
-        onChange={(e) => {
-          if (e.target.value === '__new__') {
-            setCategory('');
-            setCreating(true);
-          } else {
-            setCategory(e.target.value);
-          }
-        }}
-        className={`${input} flex-1`}
-      >
-        {!isExisting && <option value="" disabled>Elige una categoría</option>}
-        {categories.map((c) => (
-          <option key={c} value={c}>{c}</option>
-        ))}
-        <option value="__new__">+ Crear categoría nueva…</option>
-      </select>
-    </div>
+    <select
+      required
+      value={isExisting ? category : ''}
+      onChange={(e) => {
+        if (e.target.value === '__new__') {
+          setCategory('');
+          setCreating(true);
+        } else {
+          setCategory(e.target.value);
+        }
+      }}
+      className={input}
+    >
+      <option value="" disabled>
+        {categories.length === 0 ? 'Cargando categorías…' : 'Elige una categoría'}
+      </option>
+      {categories.map((c) => (
+        <option key={c} value={c}>{c}</option>
+      ))}
+      <option value="__new__">+ Crear categoría nueva…</option>
+    </select>
   );
 }
 
