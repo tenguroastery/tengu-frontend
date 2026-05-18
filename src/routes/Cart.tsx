@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { formatCLP, formatSize } from '../lib/api';
+import { api, formatCLP, formatSize } from '../lib/api';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import { useSiteSettings } from '../store/site';
 
@@ -10,7 +11,31 @@ export default function Cart() {
   const setQuantity = useCart((s) => s.setQuantity);
   const removeItem = useCart((s) => s.removeItem);
   const clear = useCart((s) => s.clear);
+  const reconcile = useCart((s) => s.reconcile);
   const siteSettings = useSiteSettings();
+  const [reconcileNotice, setReconcileNotice] = useState<string | null>(null);
+
+  // Al montar /carrito, refrescamos precios y removemos items huérfanos
+  // (producto despublicado o variante eliminada). Si algo cambió, lo
+  // mostramos al cliente como aviso no-bloqueante.
+  useEffect(() => {
+    let cancelled = false;
+    api.listProducts()
+      .then((fresh) => {
+        if (cancelled) return;
+        const report = reconcile(fresh);
+        const parts: string[] = [];
+        if (report.removed.length) {
+          parts.push(`Sacamos ${report.removed.join(', ')} (ya no está disponible)`);
+        }
+        if (report.priceUpdated.length) {
+          parts.push(`Actualizamos precios: ${report.priceUpdated.join(', ')}`);
+        }
+        if (parts.length) setReconcileNotice(parts.join('. ') + '.');
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [reconcile]);
 
   const freeShippingThreshold = siteSettings?.free_shipping_threshold_clp ?? 0;
   const remaining = freeShippingThreshold > 0 ? freeShippingThreshold - subtotal : 0;
@@ -40,6 +65,12 @@ export default function Cart() {
       <p className="mt-1 text-sm text-tengu-dark/60">
         {items.length} producto{items.length === 1 ? '' : 's'}
       </p>
+
+      {reconcileNotice && (
+        <div className="mt-4 rounded-md border border-tengu-mustard/40 bg-tengu-mustard/10 p-3 text-sm text-tengu-dark/80">
+          {reconcileNotice}
+        </div>
+      )}
 
       <div className="mt-8 grid gap-10 md:grid-cols-[1fr_320px]">
         <ul className="divide-y divide-tengu-dark/10">

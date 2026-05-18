@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import Breadcrumbs from '../components/Breadcrumbs';
 import { api, formatCLP, formatSize, pricePerKg } from '../lib/api';
-import { validateRut } from '../lib/rut';
 import { useSeo } from '../lib/seo';
 import type { Product, ShippingMethod } from '../types';
 
@@ -59,10 +58,12 @@ export default function Subscription() {
     shipping_notes: '',
   });
 
-  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu'>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [regions, setRegions] = useState<RegionTree[]>([]);
-  const navigate = useNavigate();
+  // submitting / navigate / handlePayment / setError removidos: flujo de pago
+  // automático deshabilitado hasta que Webpay/Khipu vuelvan online. Se
+  // conservan en git history (commit anterior) para restaurar cuando se
+  // reactiven. El form ahora redirige a WhatsApp para coordinar manual.
 
   useEffect(() => {
     api.listProducts()
@@ -108,56 +109,6 @@ export default function Subscription() {
   const update = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handlePayment = async (method: 'webpay' | 'khipu') => {
-    setError(null);
-    if (!validateRut(form.customer_rut)) {
-      setError('El RUT no es válido. Verifica el dígito verificador.');
-      return;
-    }
-    setSubmitting(method);
-    try {
-      const res = await api.createSubscription({
-        customer_email: form.customer_email.trim(),
-        customer_name: form.customer_name.trim(),
-        customer_phone: form.customer_phone.trim(),
-        customer_rut: form.customer_rut.trim(),
-        shipping_method: shippingMethod,
-        shipping_address: shippingMethod !== 'pickup' ? form.shipping_address.trim() : undefined,
-        shipping_comuna: shippingMethod !== 'pickup' ? form.shipping_comuna.trim() : undefined,
-        shipping_region: shippingMethod !== 'pickup' ? form.shipping_region : undefined,
-        shipping_notes: form.shipping_notes.trim() || undefined,
-        frequency_days: frequencyDays,
-        product_slug: isSurprise ? null : productSlug,
-        size_g: sizeG,
-        is_surprise: isSurprise,
-      });
-
-      // Lanzar pago de la primera orden
-      if (method === 'webpay') {
-        const init = await api.initWebpay(res.order.id);
-        // Submit a form a Webpay
-        const formEl = document.createElement('form');
-        formEl.method = 'POST';
-        formEl.action = init.url;
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'token_ws';
-        input.value = init.token;
-        formEl.appendChild(input);
-        document.body.appendChild(formEl);
-        formEl.submit();
-      } else {
-        const init = await api.initKhipu(res.order.id);
-        const target = init.simplified_transfer_url || init.payment_url;
-        if (!target) throw new Error('Khipu no devolvió URL');
-        window.location.href = target;
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setSubmitting(null);
-      void navigate;
-    }
-  };
 
   return (
     <>
@@ -429,23 +380,28 @@ export default function Subscription() {
                     </div>
                   )}
 
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => handlePayment('webpay')}
-                      disabled={submitting !== null}
-                      className="rounded-md bg-tengu-mustard px-4 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-cream disabled:opacity-50"
+                  {/* Suscripciones requieren cobro recurrente automático. BanchilePagos
+                      no soporta tokenización, así que mientras Webpay/Khipu no estén
+                      activos el flujo queda como lead — el cliente nos contacta por
+                      WhatsApp y coordinamos manual. */}
+                  <div className="mt-4 space-y-3">
+                    <div className="rounded-md border border-white/20 bg-white/5 p-4 text-sm text-tengu-cream/80">
+                      <p className="font-semibold text-tengu-cream">Suscripciones llegan pronto</p>
+                      <p className="mt-1 text-xs">
+                        Estamos activando los pagos recurrentes. Escríbenos por WhatsApp
+                        con tu plan elegido y coordinamos la primera entrega.
+                      </p>
+                    </div>
+                    <a
+                      href={`https://wa.me/56950013366?text=${encodeURIComponent(
+                        `Hola, quiero suscribirme: ${isSurprise ? 'sorpresa del barista' : (selectedProduct?.name ?? 'café')} ${formatSize(sizeG)} cada ${frequencyDays} días.`,
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-md bg-tengu-mustard px-4 py-3 text-center text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-cream"
                     >
-                      {submitting === 'webpay' ? 'Conectando…' : 'Pagar con tarjeta · Webpay'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handlePayment('khipu')}
-                      disabled={submitting !== null}
-                      className="rounded-md border border-white/20 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-cream transition hover:bg-white/10 disabled:opacity-50"
-                    >
-                      {submitting === 'khipu' ? 'Conectando…' : 'Transferencia · Khipu'}
-                    </button>
+                      Coordinar por WhatsApp →
+                    </a>
                   </div>
                 </div>
               </div>

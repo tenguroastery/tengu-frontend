@@ -98,11 +98,15 @@ export default function Checkout() {
   const formRef = useRef<HTMLFormElement>(null);
   const inFlightRef = useRef<boolean>(false);
 
+  const reconcile = useCart((s) => s.reconcile);
+
   // Site settings (umbral envío gratis, etc.) — una sola vez
   useEffect(() => {
     api.getSiteSettings().then(setSiteSettings).catch(() => undefined);
     api.listRegions().then(setRegions).catch(() => undefined);
-  }, []);
+    // Reconcilia el cart contra precios actuales antes de cobrar.
+    api.listProducts().then((fresh) => reconcile(fresh)).catch(() => undefined);
+  }, [reconcile]);
 
   // Comunas de la región seleccionada (relación padre-hijo).
   const comunasOfRegion = useMemo(() => {

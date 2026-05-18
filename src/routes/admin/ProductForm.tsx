@@ -227,20 +227,13 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
               )}
             </Field>
             <Field label="Categoría" required>
-              <input
-                required
-                list="cat-list"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className={input}
-                placeholder="ej: Filtrado, Espresso, Tazas, Equipo, Suscripción"
+              <CategoryPicker
+                category={category}
+                setCategory={setCategory}
+                categories={categories}
               />
-              <datalist id="cat-list">
-                {categories.map((c) => <option key={c} value={c} />)}
-              </datalist>
               <p className="mt-1 text-xs text-tengu-dark/50">
-                Puedes escribir una categoría nueva — aparece automático en la tienda.
-                Existentes: {categories.join(', ') || '(ninguna aún)'}
+                Elige de las existentes o crea una nueva. Evita typos: "Filtrado" ≠ "filtrado".
               </p>
             </Field>
             {productKind === 'cafe' && (
@@ -430,6 +423,68 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
 }
 
 const input = 'w-full rounded-md border border-tengu-dark/15 bg-white px-3 py-2 text-sm focus:border-tengu-ink focus:outline-none';
+
+function CategoryPicker({
+  category,
+  setCategory,
+  categories,
+}: {
+  category: string;
+  setCategory: (v: string) => void;
+  categories: string[];
+}) {
+  // Si la categoría actual no está en la lista existente, asumimos que el
+  // usuario está creando una nueva → entramos en modo input free-text.
+  const isExisting = categories.includes(category);
+  const [creating, setCreating] = useState(!isExisting && category !== '');
+
+  if (creating) {
+    return (
+      <div className="flex gap-2">
+        <input
+          required
+          autoFocus
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          onBlur={(e) => setCategory(e.target.value.trim())}
+          placeholder="Nombre de la categoría nueva"
+          className={`${input} flex-1`}
+        />
+        <button
+          type="button"
+          onClick={() => { setCreating(false); setCategory(categories[0] ?? ''); }}
+          className="text-xs uppercase tracking-wider text-tengu-dark/60 hover:text-tengu-dark"
+        >
+          Cancelar
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-2">
+      <select
+        required
+        value={isExisting ? category : ''}
+        onChange={(e) => {
+          if (e.target.value === '__new__') {
+            setCategory('');
+            setCreating(true);
+          } else {
+            setCategory(e.target.value);
+          }
+        }}
+        className={`${input} flex-1`}
+      >
+        {!isExisting && <option value="" disabled>Elige una categoría</option>}
+        {categories.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+        <option value="__new__">+ Crear categoría nueva…</option>
+      </select>
+    </div>
+  );
+}
 
 function Field({ label, required = false, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
