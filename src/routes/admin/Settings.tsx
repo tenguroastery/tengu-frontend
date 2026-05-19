@@ -85,6 +85,23 @@ export default function AdminSettings() {
         </Section>
 
         <Section title="Suscripción de café">
+          <label className="flex items-start gap-3 rounded-md border border-tengu-dark/10 bg-white p-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={draft.subscription_enabled ?? true}
+              onChange={(e) => setDraft({ ...draft, subscription_enabled: e.target.checked })}
+              className="mt-0.5 h-5 w-5 accent-tengu-ink"
+            />
+            <div className="flex-1">
+              <p className="text-sm font-semibold">
+                {draft.subscription_enabled ?? true ? '✓ Suscripción activa' : '⊘ Suscripción en "Próximamente"'}
+              </p>
+              <p className="mt-1 text-xs text-tengu-dark/60">
+                Si está desactivada, /suscripcion muestra un cartel de "próximamente" sin formulario,
+                y el link desaparece del header y del footer.
+              </p>
+            </div>
+          </label>
           <Field label="Descuento % suscripción" hint="Se aplica a todas las suscripciones recurrentes.">
             <input
               type="number"

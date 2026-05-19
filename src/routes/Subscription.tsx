@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { api, formatCLP, formatSize, pricePerKg } from '../lib/api';
 import { useSeo } from '../lib/seo';
+import { useSiteSettings } from '../store/site';
 import type { Product, ShippingMethod } from '../types';
 
 const FREQUENCIES = [
@@ -35,6 +36,9 @@ export default function Subscription() {
       'Suscríbete y recibe café de especialidad fresco cada mes en tu casa, con 10% de descuento. Cancela cuando quieras.',
     canonical: '/suscripcion',
   });
+
+  const settings = useSiteSettings();
+  const subscriptionEnabled = settings?.subscription_enabled !== false;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,6 +113,40 @@ export default function Subscription() {
   const update = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
+
+  if (!subscriptionEnabled) {
+    return (
+      <section className="mx-auto max-w-3xl px-6 py-24 text-center">
+        <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Suscripción' }]} />
+        <p className="mt-12 text-5xl">☕</p>
+        <h1 className="mt-6 font-display text-3xl text-tengu-ink md:text-4xl">Suscripciones</h1>
+        <p className="mt-3 inline-block rounded-full bg-tengu-mustard px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-tengu-dark">
+          Próximamente
+        </p>
+        <p className="mt-6 text-sm text-tengu-dark/70">
+          Estamos terminando de activar los cobros recurrentes automáticos.
+          Mientras tanto, escríbenos por WhatsApp con el café y la frecuencia
+          que te interesan y coordinamos manual.
+        </p>
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <a
+            href="https://wa.me/56950013366?text=Hola,%20quiero%20suscribirme%20a%20la%20entrega%20regular%20de%20caf%C3%A9."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-md bg-tengu-ink px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark"
+          >
+            Coordinar por WhatsApp →
+          </a>
+          <Link
+            to="/tienda"
+            className="text-sm text-tengu-ink hover:underline"
+          >
+            Mientras tanto, mira la tienda
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>

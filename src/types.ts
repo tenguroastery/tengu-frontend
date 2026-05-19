@@ -35,6 +35,7 @@ export type SiteSettings = {
   roast_day: string;
   ship_days: string;
   subscription_discount_pct: number;
+  subscription_enabled: boolean;
   wholesale_min_kg: number;
   wholesale_lead_msg: string;
 };

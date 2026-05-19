@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom';
 
 import { InstagramIcon, InstagramLink } from './SocialIcons';
 import { selectCartCount, useCart } from '../store/cart';
+import { useSiteSettings } from '../store/site';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm uppercase tracking-wider transition-colors ${
@@ -10,6 +11,11 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 
 export default function Header() {
   const count = useCart(selectCartCount);
+  const settings = useSiteSettings();
+  // Por defecto true: si site_settings aún no cargó, mostramos el link
+  // (peor caso: el cliente entra y ve "próximamente"). Si está explícitamente
+  // deshabilitada, escondemos el link.
+  const subscriptionEnabled = settings?.subscription_enabled !== false;
 
   return (
     <header className="sticky top-0 z-40 bg-tengu-dark/95 text-tengu-cream backdrop-blur supports-[backdrop-filter]:bg-tengu-dark/85">
@@ -21,7 +27,9 @@ export default function Header() {
         <nav className="flex items-center gap-5 sm:gap-7">
           <NavLink to="/" end className={navClass}>Inicio</NavLink>
           <NavLink to="/tienda" className={navClass}>Tienda</NavLink>
-          <NavLink to="/suscripcion" className={navClass}>Suscripción</NavLink>
+          {subscriptionEnabled && (
+            <NavLink to="/suscripcion" className={navClass}>Suscripción</NavLink>
+          )}
           <NavLink to="/sobre-nosotros" className={navClass}>Nosotros</NavLink>
           <NavLink to="/blog" className={navClass}>Blog</NavLink>
           <InstagramLink className="text-tengu-cream/70 transition hover:text-tengu-mustard">
