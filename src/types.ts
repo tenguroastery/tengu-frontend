@@ -97,7 +97,12 @@ export type OrderItem = {
   subtotal_clp: number;
 };
 
-export type PaymentMethod = 'webpay' | 'khipu' | 'bank_transfer';
+export type PaymentMethod = 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago';
+
+export type MercadoPagoInit = {
+  preference_id: string;
+  init_point: string;
+};
 
 export type Order = {
   id: number;

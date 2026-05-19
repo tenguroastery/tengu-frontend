@@ -91,7 +91,7 @@ export default function Checkout() {
   const [regions, setRegions] = useState<RegionTree[]>([]);
   const [quote, setQuote] = useState<ShippingQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
-  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer'>(null);
+  const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago'>(null);
   const [error, setError] = useState<string | null>(null);
   const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
@@ -232,7 +232,7 @@ export default function Checkout() {
     return true;
   };
 
-  const handlePayment = async (method: 'webpay' | 'khipu' | 'bank_transfer') => {
+  const handlePayment = async (method: 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago') => {
     // Guard contra doble-click: incluso si React no re-renderea el botón a
     // tiempo, el ref bloquea el segundo click sincrónico.
     if (inFlightRef.current) return;
@@ -287,6 +287,10 @@ export default function Checkout() {
         const target = init.simplified_transfer_url || init.payment_url;
         if (!target) throw new Error('Khipu no devolvió URL de pago');
         window.location.href = target;
+      } else if (method === 'mercadopago') {
+        const init = await api.initMercadoPago(order.id);
+        if (!init.init_point) throw new Error('Mercado Pago no devolvió URL de pago');
+        window.location.href = init.init_point;
       } else {
         navigate(`/thanks/${order.id}?method=bank_transfer&token=${order.access_token}`);
       }
@@ -542,6 +546,15 @@ export default function Checkout() {
               className="w-full rounded-md bg-tengu-ink px-4 py-3 font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark disabled:opacity-50"
             >
               {submitting === 'bank_transfer' ? 'Creando tu pedido…' : 'Pagar con BanchilePagos'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handlePayment('mercadopago')}
+              disabled={submitting !== null}
+              className="w-full rounded-md bg-[#009ee3] px-4 py-3 font-semibold uppercase tracking-wider text-white transition hover:bg-[#007eb5] disabled:opacity-50"
+            >
+              {submitting === 'mercadopago' ? 'Conectando…' : 'Pagar con Mercado Pago'}
             </button>
 
             <div className="relative">

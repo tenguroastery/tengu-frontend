@@ -2,6 +2,7 @@ import type { CustomerProfile } from '../store/auth';
 import type {
   CoffeeSubscription,
   KhipuInit,
+  MercadoPagoInit,
   Order,
   OrderPayload,
   Post,
@@ -141,6 +142,11 @@ export const api = {
     }),
   initKhipu: (orderId: number) =>
     request<KhipuInit>('/checkout/khipu/init', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId }),
+    }),
+  initMercadoPago: (orderId: number) =>
+    request<MercadoPagoInit>('/checkout/mercadopago/init', {
       method: 'POST',
       body: JSON.stringify({ order_id: orderId }),
     }),
