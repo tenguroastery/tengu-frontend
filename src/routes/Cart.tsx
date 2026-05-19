@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import SafeImg from '../components/SafeImg';
 import { api, formatCLP, formatSize } from '../lib/api';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import { useSiteSettings } from '../store/site';
@@ -77,17 +78,15 @@ export default function Cart() {
           {items.map((item) => (
             <li key={item.key} className="flex gap-4 py-4">
               <Link to={`/cafe/${item.productSlug}`} className="flex-shrink-0">
-                {item.productImage && (
-                  <img
-                    src={`/uploads/${item.productImage}`}
-                    alt={item.productName}
-                    className="h-24 w-20 rounded-md object-cover"
-                    width={80}
-                    height={96}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                )}
+                <SafeImg
+                  src={item.productImage ? `/uploads/${item.productImage}` : undefined}
+                  alt={item.productName}
+                  className="h-24 w-20 rounded-md object-cover"
+                  width={80}
+                  height={96}
+                  loading="lazy"
+                  decoding="async"
+                />
               </Link>
               <div className="flex flex-1 flex-col gap-1">
                 <div className="flex items-start justify-between gap-2">

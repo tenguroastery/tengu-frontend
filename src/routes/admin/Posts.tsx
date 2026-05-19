@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import SafeImg from '../../components/SafeImg';
 import { adminApi } from '../../lib/admin-api';
 import PostForm from './PostForm';
 import type { Post } from '../../types';
@@ -73,9 +74,11 @@ export default function AdminPosts() {
         <ul className="mt-6 space-y-3">
           {posts.map((post) => (
             <li key={post.slug} className="flex items-start gap-4 rounded-xl bg-white p-4 shadow-sm">
-              {post.cover && (
-                <img src={post.cover} alt="" className="h-20 w-32 flex-none rounded-md object-cover" />
-              )}
+              <SafeImg
+                src={post.cover || undefined}
+                alt=""
+                className="h-20 w-32 flex-none rounded-md object-cover"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-display text-lg leading-tight">{post.title}</h2>

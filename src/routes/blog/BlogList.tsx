@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Breadcrumbs from '../../components/Breadcrumbs';
+import SafeImg from '../../components/SafeImg';
 import { api } from '../../lib/api';
 import { useSeo } from '../../lib/seo';
 import type { Post } from '../../types';
@@ -49,16 +50,14 @@ export default function BlogList() {
                 className="group block overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="aspect-[16/9] overflow-hidden bg-tengu-cream">
-                  {post.cover && (
-                    <img
-                      src={post.cover}
-                      alt=""
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      loading="lazy"
-                      width={800}
-                      height={450}
-                    />
-                  )}
+                  <SafeImg
+                    src={post.cover || undefined}
+                    alt=""
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    width={800}
+                    height={450}
+                  />
                 </div>
                 <div className="p-6">
                   <p className="text-xs uppercase tracking-wider text-tengu-mustard">

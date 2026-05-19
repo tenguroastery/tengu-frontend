@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import Breadcrumbs from '../../components/Breadcrumbs';
+import SafeImg from '../../components/SafeImg';
 import { api } from '../../lib/api';
 import { setStructuredData, useSeo } from '../../lib/seo';
 import type { Post } from '../../types';
@@ -91,8 +92,8 @@ export default function BlogPost() {
       </header>
 
       <figure className="mt-8 overflow-hidden rounded-2xl">
-        <img
-          src={post.cover}
+        <SafeImg
+          src={post.cover || undefined}
           alt=""
           className="aspect-[16/9] w-full object-cover"
           loading="eager"

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 
+import SafeImg from './SafeImg';
 import type { Product } from '../types';
 import { formatCLP, formatSize, pricePerKg } from '../lib/api';
 
@@ -22,17 +23,15 @@ export default function ProductCard({ product }: { product: Product }) {
       className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-tengu-cream">
-        {product.image && (
-          <img
-            src={`/uploads/${product.image}`}
-            alt={`Bolsa de ${product.name} — café de ${product.origin} tostado en Chile`}
-            className="h-full w-full object-cover transition group-hover:scale-105"
-            loading="lazy"
-            decoding="async"
-            width={400}
-            height={533}
-          />
-        )}
+        <SafeImg
+          src={product.image ? `/uploads/${product.image}` : undefined}
+          alt={`Bolsa de ${product.name} — café de ${product.origin} tostado en Chile`}
+          className="h-full w-full object-cover transition group-hover:scale-105"
+          loading="lazy"
+          decoding="async"
+          width={400}
+          height={533}
+        />
         <span className="absolute right-3 top-3 rounded-full bg-tengu-dark/90 px-3 py-1 text-xs uppercase tracking-wider text-tengu-cream">
           {product.roast_profile}
         </span>

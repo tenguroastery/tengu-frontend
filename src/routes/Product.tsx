@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import Breadcrumbs from '../components/Breadcrumbs';
 import ReviewsSection from '../components/ReviewsSection';
+import SafeImg from '../components/SafeImg';
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, pricePerKg } from '../lib/api';
 import { setStructuredData, useSeo } from '../lib/seo';
@@ -117,17 +118,15 @@ export default function Product() {
 
       <div className="mt-6 grid gap-12 md:grid-cols-2">
         <div className="aspect-[3/4] overflow-hidden rounded-lg bg-white">
-          {product.image && (
-            <img
-              src={`/uploads/${product.image}`}
-              alt={`Bolsa de ${product.name} — café ${product.origin}`}
-              className="h-full w-full object-cover"
-              width={600}
-              height={800}
-              fetchPriority="high"
-              decoding="async"
-            />
-          )}
+          <SafeImg
+            src={product.image ? `/uploads/${product.image}` : undefined}
+            alt={`Bolsa de ${product.name} — café ${product.origin}`}
+            className="h-full w-full object-cover"
+            width={600}
+            height={800}
+            fetchPriority="high"
+            decoding="async"
+          />
         </div>
 
         <div>

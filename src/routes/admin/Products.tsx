@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import SafeImg from '../../components/SafeImg';
 import { adminApi, type AdminProduct, type AdminVariant } from '../../lib/admin-api';
 import { formatCLP } from '../../lib/api';
 import ProductForm from './ProductForm';
@@ -157,7 +158,12 @@ export default function AdminProducts() {
                 <div>
                   <div className="aspect-[3/4] overflow-hidden rounded-md bg-tengu-cream">
                     {p.image ? (
-                      <img src={`/uploads/${p.image}`} alt={p.name} className="h-full w-full object-cover" />
+                      <SafeImg
+                        src={`/uploads/${p.image}`}
+                        alt={p.name}
+                        className="h-full w-full object-cover"
+                        fallbackLabel="Sin foto"
+                      />
                     ) : (
                       <div className="flex h-full items-center justify-center text-xs text-tengu-dark/40">Sin foto</div>
                     )}

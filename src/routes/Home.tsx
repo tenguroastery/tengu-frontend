@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import HeroCarousel from '../components/HeroCarousel';
 import ProductCard from '../components/ProductCard';
+import SafeImg from '../components/SafeImg';
 import { api } from '../lib/api';
 import { useSeo } from '../lib/seo';
 import type { Product } from '../types';
@@ -109,8 +110,8 @@ export default function Home() {
             return (
               <article key={story.code} className="group relative overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                 <div className="aspect-[4/5] overflow-hidden bg-tengu-cream">
-                  <img
-                    src={`/uploads/${product.image}`}
+                  <SafeImg
+                    src={product.image ? `/uploads/${product.image}` : undefined}
                     alt={`Café de ${story.name} — Tengu Roastery`}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     loading="lazy"
