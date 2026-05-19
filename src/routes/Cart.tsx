@@ -116,9 +116,11 @@ export default function Cart() {
                     </button>
                     <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
                     <button
-                      onClick={() => setQuantity(item.key, item.quantity + 1)}
-                      className="px-3 py-1.5 text-tengu-dark/70 hover:text-tengu-dark"
+                      onClick={() => setQuantity(item.key, Math.min(99, item.quantity + 1))}
+                      disabled={item.quantity >= 99}
+                      className="px-3 py-1.5 text-tengu-dark/70 hover:text-tengu-dark disabled:opacity-30"
                       aria-label="Aumentar"
+                      title={item.quantity >= 99 ? 'Máximo 99 por formato' : undefined}
                     >
                       +
                     </button>

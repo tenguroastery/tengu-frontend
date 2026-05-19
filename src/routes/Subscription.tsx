@@ -40,7 +40,7 @@ export default function Subscription() {
   const [loading, setLoading] = useState(true);
 
   // Plan state
-  const [frequencyDays, setFrequencyDays] = useState<30 | 60 | 90>(30);
+  const [frequencyDays, setFrequencyDays] = useState<30 | 45 | 60>(30);
   const [isSurprise, setIsSurprise] = useState(false);
   const [productSlug, setProductSlug] = useState<string>('');
   const [sizeG, setSizeG] = useState<250 | 500 | 1000>(250);
@@ -179,7 +179,7 @@ export default function Subscription() {
                           name="freq"
                           value={f.days}
                           checked={frequencyDays === f.days}
-                          onChange={() => setFrequencyDays(f.days as 30 | 60 | 90)}
+                          onChange={() => setFrequencyDays(f.days)}
                           className="sr-only"
                         />
                         <p className="font-display text-lg">{f.label}</p>

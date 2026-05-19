@@ -32,8 +32,10 @@ export default function NewsletterForm({
       if (res.status === 'subscribed') ecommerceEvents.newsletterSignup();
     } catch (err) {
       setStatus('error');
-      setMessage('No pudimos procesar tu correo. Revísalo e intenta de nuevo.');
-      console.error(err);
+      // Si lib/api ya tradujo el error a español (vía formatApiError), lo
+      // mostramos. Solo si no hay mensaje, caemos al fallback genérico.
+      const msg = err instanceof Error ? err.message : '';
+      setMessage(msg || 'No pudimos procesar tu correo. Revísalo e intenta de nuevo.');
     }
   };
 

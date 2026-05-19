@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 
 import Breadcrumbs from '../components/Breadcrumbs';
+import { formatApiError } from '../lib/api';
 import { useSeo } from '../lib/seo';
 import { useSiteSettings } from '../store/site';
 
@@ -44,7 +45,14 @@ export default function Horeca() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error(`${res.status}`);
+      if (!res.ok) {
+        let detail = `${res.status} ${res.statusText}`;
+        try {
+          const body = await res.json();
+          if (body?.detail) detail = formatApiError(body.detail);
+        } catch { /* keep default */ }
+        throw new Error(detail);
+      }
       setStatus('ok');
     } catch (err) {
       setStatus('error');
