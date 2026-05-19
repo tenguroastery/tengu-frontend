@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import SafeImg from '../components/SafeImg';
 import { api } from '../lib/api';
 import { useSeo } from '../lib/seo';
+import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import type { Product } from '../types';
 
 type OriginStory = {
@@ -76,13 +77,14 @@ export default function Home() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const tick = useRevalidationTick();
 
   useEffect(() => {
     api.listProducts()
       .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [tick]);
 
   const featured = products.filter((p) => p.featured);
 

@@ -183,6 +183,16 @@ export const adminApi = {
   deleteProduct: (slug: string) =>
     request<void>(`/admin/products/${slug}`, { method: 'DELETE' }),
 
+  // --- Uploads genéricos (cover de posts, brochures, etc.) ---
+  uploadImage: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return request<{ url: string; filename: string; size_bytes: number }>(
+      '/admin/uploads',
+      { method: 'POST', body: fd },
+    );
+  },
+
   // --- Blog Posts ---
   listPostsAdmin: () => request<Post[]>('/admin/posts'),
   getPostAdmin: (slug: string) => request<Post>(`/admin/posts/${slug}`),

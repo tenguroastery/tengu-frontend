@@ -31,6 +31,7 @@ export default function PostForm({ post, onClose, onSaved }: Props) {
   const [body, setBody] = useState(post?.body ?? '');
   const [isPublished, setIsPublished] = useState(post?.is_published ?? true);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Auto-generar slug desde el título al crear
@@ -135,10 +136,49 @@ export default function PostForm({ post, onClose, onSaved }: Props) {
             />
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-[1fr_1fr_120px]">
-            <Field label="URL cover" hint="Ej: /uploads/rwanda-natural.jpg">
-              <input value={cover} onChange={(e) => setCover(e.target.value)} className={input} />
-            </Field>
+          <Field label="Imagen de portada" hint="Sube JPG/PNG/WebP (máx 5 MB) o pega una URL existente.">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingCover}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingCover(true);
+                    setError(null);
+                    try {
+                      const res = await adminApi.uploadImage(file);
+                      setCover(res.url);
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : 'Error subiendo imagen');
+                    } finally {
+                      setUploadingCover(false);
+                      e.target.value = '';  // permite re-subir el mismo archivo
+                    }
+                  }}
+                  className="flex-1 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-tengu-ink file:px-3 file:py-1.5 file:text-xs file:font-semibold file:uppercase file:tracking-wider file:text-white"
+                />
+                {uploadingCover && <span className="text-xs text-tengu-dark/60">Subiendo…</span>}
+              </div>
+              <input
+                value={cover}
+                onChange={(e) => setCover(e.target.value)}
+                placeholder="/uploads/cover-XXXXX.png"
+                className={input}
+              />
+              {cover && (
+                <img
+                  src={cover}
+                  alt="Preview"
+                  className="h-32 w-auto rounded-md border border-tengu-dark/10 object-cover"
+                />
+              )}
+            </div>
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
             <Field label="Fecha publicación" required>
               <input
                 required

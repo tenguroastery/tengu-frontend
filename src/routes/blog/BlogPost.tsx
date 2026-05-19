@@ -7,12 +7,14 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import SafeImg from '../../components/SafeImg';
 import { api } from '../../lib/api';
 import { setStructuredData, useSeo } from '../../lib/seo';
+import { useRevalidationTick } from '../../lib/useRevalidateOnFocus';
 import type { Post } from '../../types';
 
 export default function BlogPost() {
   const { slug = '' } = useParams();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const tick = useRevalidationTick();
 
   useEffect(() => {
     setLoading(true);
@@ -20,7 +22,7 @@ export default function BlogPost() {
       .then(setPost)
       .catch(() => setPost(null))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, tick]);
 
   useSeo({
     title: post?.title ?? 'Artículo',

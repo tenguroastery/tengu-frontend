@@ -5,11 +5,13 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import SafeImg from '../../components/SafeImg';
 import { api } from '../../lib/api';
 import { useSeo } from '../../lib/seo';
+import { useRevalidationTick } from '../../lib/useRevalidateOnFocus';
 import type { Post } from '../../types';
 
 export default function BlogList() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const tick = useRevalidationTick();
 
   useSeo({
     title: 'Blog · guías de café de especialidad',
@@ -23,7 +25,7 @@ export default function BlogList() {
       .then(setPosts)
       .catch(() => undefined)
       .finally(() => setLoading(false));
-  }, []);
+  }, [tick]);
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-12">

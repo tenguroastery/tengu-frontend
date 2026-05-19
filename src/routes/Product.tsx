@@ -7,6 +7,7 @@ import SafeImg from '../components/SafeImg';
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, pricePerKg } from '../lib/api';
 import { setStructuredData, useSeo } from '../lib/seo';
+import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { useCart } from '../store/cart';
 import type { Product as ProductT } from '../types';
 
@@ -20,6 +21,7 @@ export default function Product() {
   const [justAdded, setJustAdded] = useState(false);
 
   const addItem = useCart((s) => s.addItem);
+  const tick = useRevalidationTick();
 
   useEffect(() => {
     setLoading(true);
@@ -58,7 +60,7 @@ export default function Product() {
       })
       .catch((err) => setError(String(err)))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, tick]);
 
   useSeo({
     title: product ? shortenProductTitle(product.name, product.origin) : 'Café de especialidad',

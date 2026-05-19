@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import { api } from '../lib/api';
 import { useSeo } from '../lib/seo';
+import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import type { Product } from '../types';
 
 export default function Shop() {
@@ -15,13 +16,14 @@ export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState<string>('Todos');
+  const tick = useRevalidationTick();
 
   useEffect(() => {
     api.listProducts()
       .then(setProducts)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [tick]);
 
   // Categorías dinámicas derivadas del catálogo
   const categories = useMemo(() => {

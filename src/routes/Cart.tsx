@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import SafeImg from '../components/SafeImg';
 import { api, formatCLP, formatSize } from '../lib/api';
+import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import { useSiteSettings } from '../store/site';
 
@@ -15,10 +16,11 @@ export default function Cart() {
   const reconcile = useCart((s) => s.reconcile);
   const siteSettings = useSiteSettings();
   const [reconcileNotice, setReconcileNotice] = useState<string | null>(null);
+  const tick = useRevalidationTick();
 
-  // Al montar /carrito, refrescamos precios y removemos items huérfanos
-  // (producto despublicado o variante eliminada). Si algo cambió, lo
-  // mostramos al cliente como aviso no-bloqueante.
+  // Al montar /carrito y al volver al foco, refrescamos precios y removemos
+  // items huérfanos (producto despublicado o variante eliminada). Si algo
+  // cambió, lo mostramos al cliente como aviso no-bloqueante.
   useEffect(() => {
     let cancelled = false;
     api.listProducts()
@@ -36,7 +38,7 @@ export default function Cart() {
       })
       .catch(() => undefined);
     return () => { cancelled = true; };
-  }, [reconcile]);
+  }, [reconcile, tick]);
 
   const freeShippingThreshold = siteSettings?.free_shipping_threshold_clp ?? 0;
   const remaining = freeShippingThreshold > 0 ? freeShippingThreshold - subtotal : 0;
