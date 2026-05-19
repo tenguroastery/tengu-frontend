@@ -162,6 +162,11 @@ export const adminApi = {
       '/admin/products/restore-images',
       { method: 'POST' },
     ),
+  cleanupOrphanImages: () =>
+    request<{ deleted: string[]; bytes_freed: number; kept: number }>(
+      '/admin/products/cleanup-orphan-images',
+      { method: 'POST' },
+    ),
 
   // Category management (dedicated)
   listCategoryObjects: () => request<AdminCategory[]>('/admin/categories'),

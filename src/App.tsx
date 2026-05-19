@@ -1,4 +1,6 @@
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+
+import { useSeo } from './lib/seo';
 
 import AnalyticsBootstrap from './components/AnalyticsBootstrap';
 import AnnouncementBar from './components/AnnouncementBar';
@@ -120,10 +122,17 @@ function RedirectShopProduct() {
 }
 
 function NotFound() {
+  useSeo({
+    title: 'Página no encontrada',
+    description: 'La página que buscas no existe.',
+    canonical: '/404',
+    noindex: true,
+  });
   return (
     <div className="mx-auto max-w-2xl px-6 py-24 text-center">
       <h1 className="font-display text-3xl">404</h1>
       <p className="mt-3 text-tengu-dark/60">Página no encontrada.</p>
+      <Link to="/" className="mt-6 inline-block text-tengu-ink hover:underline">← Volver al inicio</Link>
     </div>
   );
 }

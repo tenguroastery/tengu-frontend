@@ -36,6 +36,7 @@ export type SiteSettings = {
   ship_days: string;
   subscription_discount_pct: number;
   subscription_enabled: boolean;
+  customer_accounts_enabled: boolean;
   wholesale_min_kg: number;
   wholesale_lead_msg: string;
 };

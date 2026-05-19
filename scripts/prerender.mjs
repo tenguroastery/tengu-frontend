@@ -62,7 +62,12 @@ const STATIC_ROUTES = [
 ];
 
 const SEED_PATH = resolve(ROOT, '..', 'backend', 'seed', 'products.json');
-const BLOG_DATA = resolve(ROOT, 'src', 'data', 'blog.ts');
+const POSTS_SEED_PATH = resolve(ROOT, '..', 'backend', 'seed', 'posts.json');
+
+// Si está seteado, el prerender fetchea slugs desde el backend en vez del seed.
+// Útil para que productos/posts creados desde /admin queden prerendered.
+// Default en Netlify: https://tengu-backend.azurewebsites.net/api (via env var).
+const PRERENDER_API_BASE = process.env.PRERENDER_API_BASE || '';
 
 const PREVIEW_PORT = 4173;
 const PREVIEW_URL = `http://127.0.0.1:${PREVIEW_PORT}`;
@@ -84,17 +89,36 @@ async function findChrome() {
   return null;
 }
 
-function loadProductSlugs() {
+async function fetchSlugsFromApi(path) {
+  if (!PRERENDER_API_BASE) return null;
+  try {
+    const res = await fetch(`${PRERENDER_API_BASE}${path}`, {
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) {
+      console.warn(`  [prerender] ${path} → ${res.status}, cae al seed local`);
+      return null;
+    }
+    const data = await res.json();
+    return data.map((row) => row.slug);
+  } catch (err) {
+    console.warn(`  [prerender] fetch ${path} falló (${err.message}), cae al seed local`);
+    return null;
+  }
+}
+
+async function loadProductSlugs() {
+  const fromApi = await fetchSlugsFromApi('/products');
+  if (fromApi) return fromApi;
   if (!existsSync(SEED_PATH)) return [];
   return JSON.parse(readFileSync(SEED_PATH, 'utf-8')).map((p) => p.slug);
 }
 
-function loadBlogSlugs() {
-  if (!existsSync(BLOG_DATA)) return [];
-  const src = readFileSync(BLOG_DATA, 'utf-8');
-  const slugs = [];
-  for (const m of src.matchAll(/slug:\s*['"]([a-z0-9-]+)['"]/g)) slugs.push(m[1]);
-  return slugs;
+async function loadBlogSlugs() {
+  const fromApi = await fetchSlugsFromApi('/posts');
+  if (fromApi) return fromApi;
+  if (!existsSync(POSTS_SEED_PATH)) return [];
+  return JSON.parse(readFileSync(POSTS_SEED_PATH, 'utf-8')).map((p) => p.slug);
 }
 
 async function isPreviewUp() {
@@ -161,8 +185,8 @@ async function main() {
     process.exit(1);
   }
 
-  const productSlugs = loadProductSlugs();
-  const blogSlugs = loadBlogSlugs();
+  const productSlugs = await loadProductSlugs();
+  const blogSlugs = await loadBlogSlugs();
   const routes = [
     ...STATIC_ROUTES,
     ...productSlugs.map((s) => `/cafe/${s}`),

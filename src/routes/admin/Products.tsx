@@ -106,6 +106,21 @@ export default function AdminProducts() {
             ↻ Restaurar fotos del seed
           </button>
           <button
+            onClick={async () => {
+              if (!confirm('Borrar imágenes en /uploads que ya no están en uso por ningún producto o post. Los archivos seed se mantienen. ¿Continuar?')) return;
+              try {
+                const res = await adminApi.cleanupOrphanImages();
+                const mb = (res.bytes_freed / 1024 / 1024).toFixed(2);
+                alert(`Borradas: ${res.deleted.length} (${mb} MB liberados). En uso: ${res.kept}.`);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : String(err));
+              }
+            }}
+            className="text-xs uppercase tracking-wider text-tengu-dark/60 hover:text-tengu-coral hover:underline"
+          >
+            🗑 Limpiar huérfanas
+          </button>
+          <button
             onClick={() => setFormMode('create')}
             className="rounded-md bg-tengu-mustard px-4 py-2 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
           >

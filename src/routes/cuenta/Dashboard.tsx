@@ -3,10 +3,15 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { api, formatCLP } from '../../lib/api';
 import { useAuth } from '../../store/auth';
+import { useSiteSettings } from '../../store/site';
 import type { Order } from '../../types';
 
 export default function CuentaDashboard() {
   const navigate = useNavigate();
+  const settings = useSiteSettings();
+  // Si las cuentas están off (default), no entra al dashboard ni con JWT viejo.
+  // Mientras settings carga, asumimos off para evitar flash del dashboard real.
+  const accountsEnabled = settings?.customer_accounts_enabled === true;
   const jwt = useAuth((s) => s.jwt);
   const customer = useAuth((s) => s.customer);
   const setCustomer = useAuth((s) => s.setCustomer);
@@ -61,7 +66,8 @@ export default function CuentaDashboard() {
     })();
   }, [jwt, setCustomer, logout, navigate]);
 
-  if (!jwt) return <Navigate to="/cuenta/login" replace />;
+  // Si las cuentas están en "próximamente", o el cliente no tiene JWT, redirigimos.
+  if (!accountsEnabled || !jwt) return <Navigate to="/cuenta/login" replace />;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

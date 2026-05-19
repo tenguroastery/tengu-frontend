@@ -116,6 +116,26 @@ export default function AdminSettings() {
           </Field>
         </Section>
 
+        <Section title="Cuentas de cliente">
+          <label className="flex items-start gap-3 rounded-md border border-tengu-dark/10 bg-white p-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={draft.customer_accounts_enabled ?? false}
+              onChange={(e) => setDraft({ ...draft, customer_accounts_enabled: e.target.checked })}
+              className="mt-0.5 h-5 w-5 accent-tengu-ink"
+            />
+            <div className="flex-1">
+              <p className="text-sm font-semibold">
+                {draft.customer_accounts_enabled ?? false ? '✓ Cuentas activas' : '⊘ Cuentas en "Próximamente"'}
+              </p>
+              <p className="mt-1 text-xs text-tengu-dark/60">
+                Si está desactivada, /cuenta y /cuenta/login muestran "próximamente"
+                y los JWT viejos de clientes no acceden al dashboard.
+              </p>
+            </div>
+          </label>
+        </Section>
+
         <Section title="Mayorista / HORECA">
           <Field label="Mínimo de kilos para wholesale" hint="Se muestra en /horeca como 'desde X kg'.">
             <input
