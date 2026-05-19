@@ -23,6 +23,7 @@ import AdminLayout from './routes/admin/Layout';
 import AdminLogin from './routes/admin/Login';
 import AdminLoginVerify from './routes/admin/LoginVerify';
 import AdminOrders from './routes/admin/Orders';
+import AdminPosts from './routes/admin/Posts';
 import AdminProducts from './routes/admin/Products';
 import AdminSettings from './routes/admin/Settings';
 import AdminShipping from './routes/admin/Shipping';
@@ -95,6 +96,7 @@ export default function App() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="posts" element={<AdminPosts />} />
             <Route path="coffee-subscriptions" element={<AdminCoffeeSubscriptions />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />
             <Route path="shipping" element={<AdminShipping />} />

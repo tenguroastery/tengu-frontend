@@ -1,17 +1,28 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Breadcrumbs from '../../components/Breadcrumbs';
-import { listPosts } from '../../data/blog';
+import { api } from '../../lib/api';
 import { useSeo } from '../../lib/seo';
+import type { Post } from '../../types';
 
 export default function BlogList() {
-  const posts = listPosts();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useSeo({
     title: 'Blog · guías de café de especialidad',
     description:
       'Guías honestas sobre café de especialidad: cómo elegir, métodos de preparación, trazabilidad y procesos. Por Tengu Roastery.',
     canonical: '/blog',
   });
+
+  useEffect(() => {
+    api.listPosts()
+      .then(setPosts)
+      .catch(() => undefined)
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-12">
@@ -25,7 +36,9 @@ export default function BlogList() {
         </p>
       </header>
 
-      {posts.length === 0 ? (
+      {loading ? (
+        <p className="mt-12 text-tengu-dark/60">Cargando…</p>
+      ) : posts.length === 0 ? (
         <p className="mt-12 text-tengu-dark/60">Pronto los primeros artículos.</p>
       ) : (
         <ul className="mt-12 grid gap-8 md:grid-cols-2">
@@ -36,14 +49,16 @@ export default function BlogList() {
                 className="group block overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="aspect-[16/9] overflow-hidden bg-tengu-cream">
-                  <img
-                    src={post.cover}
-                    alt=""
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    loading="lazy"
-                    width={800}
-                    height={450}
-                  />
+                  {post.cover && (
+                    <img
+                      src={post.cover}
+                      alt=""
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      loading="lazy"
+                      width={800}
+                      height={450}
+                    />
+                  )}
                 </div>
                 <div className="p-6">
                   <p className="text-xs uppercase tracking-wider text-tengu-mustard">
@@ -52,12 +67,12 @@ export default function BlogList() {
                   <h2 className="mt-2 font-display text-xl leading-tight">{post.title}</h2>
                   <p className="mt-2 text-sm text-tengu-dark/70">{post.excerpt}</p>
                   <p className="mt-3 text-xs text-tengu-dark/50">
-                    {new Date(post.publishedAt).toLocaleDateString('es-CL', {
+                    {new Date(post.published_at).toLocaleDateString('es-CL', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric',
                     })}{' '}
-                    · {post.readingMinutes} min de lectura
+                    · {post.reading_minutes} min de lectura
                   </p>
                 </div>
               </Link>

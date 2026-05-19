@@ -1,23 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import Breadcrumbs from '../../components/Breadcrumbs';
-import { getPostBySlug } from '../../data/blog';
+import { api } from '../../lib/api';
 import { setStructuredData, useSeo } from '../../lib/seo';
+import type { Post } from '../../types';
 
 export default function BlogPost() {
   const { slug = '' } = useParams();
-  const post = getPostBySlug(slug);
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    api.getPost(slug)
+      .then(setPost)
+      .catch(() => setPost(null))
+      .finally(() => setLoading(false));
+  }, [slug]);
 
   useSeo({
-    title: post?.title ?? 'Artículo no encontrado',
-    description: post?.metaDescription ?? 'Tengu Roastery — Blog',
+    title: post?.title ?? 'Artículo',
+    description: post?.meta_description ?? 'Tengu Roastery — Blog',
     canonical: `/blog/${slug}`,
     image: post?.cover,
     type: 'article',
-    noindex: !post,
+    noindex: !post && !loading,
   });
 
   useEffect(() => {
@@ -26,9 +36,9 @@ export default function BlogPost() {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: post.title,
-      description: post.metaDescription,
+      description: post.meta_description,
       image: `https://tenguroastery.cl${post.cover}`,
-      datePublished: post.publishedAt,
+      datePublished: post.published_at,
       author: { '@type': 'Organization', name: post.author },
       publisher: {
         '@type': 'Organization',
@@ -38,6 +48,10 @@ export default function BlogPost() {
       keywords: post.tags.join(', '),
     });
   }, [post]);
+
+  if (loading) {
+    return <div className="mx-auto max-w-2xl px-6 py-24 text-center text-tengu-dark/60">Cargando…</div>;
+  }
 
   if (!post) {
     return (
@@ -67,12 +81,12 @@ export default function BlogPost() {
         <p className="text-xs uppercase tracking-[0.4em] text-tengu-mustard">{post.tags.join(' · ')}</p>
         <h1 className="mt-3 font-display text-4xl leading-tight md:text-5xl">{post.title}</h1>
         <p className="mt-3 text-tengu-dark/60">
-          {new Date(post.publishedAt).toLocaleDateString('es-CL', {
+          {new Date(post.published_at).toLocaleDateString('es-CL', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
           })}{' '}
-          · {post.readingMinutes} min de lectura · por {post.author}
+          · {post.reading_minutes} min de lectura · por {post.author}
         </p>
       </header>
 

@@ -1,6 +1,6 @@
 import { formatApiError } from './api';
 import { useAdmin } from '../store/admin';
-import type { Order, SiteSettings } from '../types';
+import type { Order, Post, SiteSettings } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
 
@@ -177,6 +177,16 @@ export const adminApi = {
     request<AdminProduct>(`/admin/products/${slug}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteProduct: (slug: string) =>
     request<void>(`/admin/products/${slug}`, { method: 'DELETE' }),
+
+  // --- Blog Posts ---
+  listPostsAdmin: () => request<Post[]>('/admin/posts'),
+  getPostAdmin: (slug: string) => request<Post>(`/admin/posts/${slug}`),
+  createPost: (payload: Omit<Post, 'id'>) =>
+    request<Post>('/admin/posts', { method: 'POST', body: JSON.stringify(payload) }),
+  updatePost: (slug: string, payload: Partial<Omit<Post, 'id' | 'slug'>>) =>
+    request<Post>(`/admin/posts/${slug}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deletePost: (slug: string) =>
+    request<void>(`/admin/posts/${slug}`, { method: 'DELETE' }),
   updateVariant: (id: number, payload: { price_clp?: number; stock_qty?: number }) =>
     request<AdminVariant>(`/admin/products/variants/${id}`, {
       method: 'PATCH',

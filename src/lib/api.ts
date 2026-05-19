@@ -4,6 +4,7 @@ import type {
   KhipuInit,
   Order,
   OrderPayload,
+  Post,
   Product,
   Review,
   ReviewSubmit,
@@ -122,6 +123,8 @@ export type SubscribeResponse = { status: 'subscribed' | 'already_subscribed'; m
 export const api = {
   listProducts: () => request<Product[]>('/products'),
   getProduct: (slug: string) => request<Product>(`/products/${slug}`),
+  listPosts: () => request<Post[]>('/posts'),
+  getPost: (slug: string) => request<Post>(`/posts/${slug}`),
   subscribe: (email: string) =>
     request<SubscribeResponse>('/newsletter', {
       method: 'POST',

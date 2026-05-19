@@ -40,6 +40,21 @@ export type SiteSettings = {
   wholesale_lead_msg: string;
 };
 
+export type Post = {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  meta_description: string;
+  cover: string;
+  published_at: string;  // YYYY-MM-DD
+  reading_minutes: number;
+  author: string;
+  tags: string[];
+  body: string;  // markdown
+  is_published: boolean;
+};
+
 export type ShippingQuote = {
   cost_clp: number;
   zone: string;
