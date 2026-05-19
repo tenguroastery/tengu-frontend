@@ -47,10 +47,17 @@ export default function SafeImg({
 
   return (
     <img
+      key={src}  // remount al cambiar src evita que un onError tardío del src anterior pise el nuevo
       src={src}
       alt={alt}
       className={className}
-      onError={() => setErrored(true)}
+      onError={(e) => {
+        // Defensa adicional: solo marcamos errored si el onError viene del src actual
+        // (browser pudo haber comenzado la request del src anterior antes del cambio).
+        if ((e.currentTarget as HTMLImageElement).src.includes(src)) {
+          setErrored(true);
+        }
+      }}
       {...rest}
     />
   );

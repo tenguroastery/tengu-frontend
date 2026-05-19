@@ -286,10 +286,15 @@ export default function Checkout() {
         const init = await api.initKhipu(order.id);
         const target = init.simplified_transfer_url || init.payment_url;
         if (!target) throw new Error('Khipu no devolvió URL de pago');
+        // Liberamos el guard ANTES del redirect. Si el browser cancela el
+        // redirect (popup blocker, back button, red caída) y el componente
+        // sigue montado, el usuario puede reintentar sin quedar bloqueado.
+        inFlightRef.current = false;
         window.location.href = target;
       } else if (method === 'mercadopago') {
         const init = await api.initMercadoPago(order.id);
         if (!init.init_point) throw new Error('Mercado Pago no devolvió URL de pago');
+        inFlightRef.current = false;
         window.location.href = init.init_point;
       } else {
         navigate(`/thanks/${order.id}?method=bank_transfer&token=${order.access_token}`);
@@ -320,7 +325,7 @@ export default function Checkout() {
     <section className="mx-auto max-w-5xl px-6 py-12">
       <h1 className="font-display text-3xl">Checkout</h1>
       <p className="mt-1 text-sm text-tengu-dark/60">
-        Procesamos tu pago vía <strong>BanchilePagos</strong>. Webpay y Khipu llegan pronto.
+        Aceptamos <strong>BanchilePagos</strong> y <strong>Mercado Pago</strong>. Webpay y Khipu llegan pronto.
       </p>
 
       {freeShippingThreshold > 0 && (

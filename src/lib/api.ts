@@ -150,6 +150,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ order_id: orderId }),
     }),
+  verifyMercadoPago: (orderId: number) =>
+    request<{ order_status: string; mp_status: string | null }>(
+      `/checkout/mercadopago/verify/${orderId}`,
+      { method: 'POST' },
+    ),
   verifyKhipu: (orderId: number) =>
     request<{ order_status: string; khipu_status: string }>(`/checkout/khipu/verify/${orderId}`, {
       method: 'POST',

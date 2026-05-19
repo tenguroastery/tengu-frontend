@@ -54,8 +54,23 @@ export default function Thanks() {
       setLoading(false);
       return;
     }
-    api.getOrder(Number(orderId), token)
-      .then((o) => {
+
+    const fetchOrder = async () => {
+      try {
+        let o = await api.getOrder(Number(orderId), token);
+        // Si el cliente vuelve de MP/Khipu antes que llegue el webhook al
+        // backend, la orden queda pending. Verificamos contra el gateway una
+        // vez para forzar la actualización. Si sigue pending tras el verify,
+        // mostramos copy "estamos procesando" sin frustrar al cliente.
+        if (o.status === 'pending') {
+          if (o.payment_method === 'mercadopago') {
+            await api.verifyMercadoPago(Number(orderId)).catch(() => undefined);
+            o = await api.getOrder(Number(orderId), token);
+          } else if (o.payment_method === 'khipu') {
+            await api.verifyKhipu(Number(orderId)).catch(() => undefined);
+            o = await api.getOrder(Number(orderId), token);
+          }
+        }
         setOrder(o);
         if (o.status === 'paid') {
           clearCart();
@@ -71,9 +86,13 @@ export default function Thanks() {
             o.total_clp,
           );
         }
-      })
-      .catch((err) => setError(String(err)))
-      .finally(() => setLoading(false));
+      } catch (err) {
+        setError(String(err));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrder();
   }, [orderId, token, clearCart]);
 
   if (loading) {
