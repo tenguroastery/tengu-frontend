@@ -3,9 +3,9 @@
 # Build: `npm run build` (incluye sitemap + prerender SSG).
 # Publish: `dist/`.
 #
-# Proxies de /api y /uploads al backend Render para mantener URLs
+# Proxies de /api y /uploads al backend Azure App Service para mantener URLs
 # root-relative igual que en dev (donde Vite proxia a localhost:8000).
-# Si renombras el servicio en Render, actualiza el host abajo.
+# Si renombras el App Service en Azure, actualiza el host abajo.
 
 [build]
   base    = "."
@@ -27,7 +27,7 @@
 #   VITE_GOOGLE_CLIENT_ID   opcional (sin esto, login con Google no carga)
 #   VITE_GA_ID              opcional (sin esto, GA4 no carga)
 
-# --- Proxy al backend Render ---
+# --- Proxy al backend Azure ---
 [[redirects]]
   from   = "/api/*"
   to     = "https://tengu-backend.azurewebsites.net/api/:splat"
