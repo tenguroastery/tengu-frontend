@@ -99,6 +99,7 @@ export default function Checkout() {
 
   const formRef = useRef<HTMLFormElement>(null);
   const inFlightRef = useRef<boolean>(false);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const reconcile = useCart((s) => s.reconcile);
   const tick = useRevalidationTick();
@@ -287,6 +288,9 @@ export default function Checkout() {
         shipping_region: selectedOption.method !== 'pickup' ? form.shipping_region : undefined,
         shipping_notes: form.shipping_notes.trim() || undefined,
         payment_method: method,
+        // Honeypot: el input #website es invisible y los humanos nunca lo
+        // tocan; si llega lleno, el backend rechaza con 422.
+        website: honeypotRef.current?.value || undefined,
         items: items.map((i) => ({
           product_slug: i.productSlug,
           size_g: i.sizeG,
@@ -371,6 +375,19 @@ export default function Checkout() {
                   className={inputClass}
                 />
               </FormField>
+              {/* Honeypot anti-bot: invisible para humanos (sr-only + tabindex=-1
+                  + autocomplete=off). Bots que llenan todos los inputs lo
+                  completan y el backend rechaza con 422. */}
+              <input
+                ref={honeypotRef}
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+                defaultValue=""
+              />
               <FormField label="Email" required>
                 <input
                   type="email"

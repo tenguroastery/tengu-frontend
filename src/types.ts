@@ -85,6 +85,8 @@ export type OrderPayload = {
   shipping_notes?: string;
   payment_method?: PaymentMethod;
   items: OrderItemPayload[];
+  /** Honeypot anti-bot. Humanos no lo llenan; si llega, backend rechaza. */
+  website?: string;
 };
 
 export type OrderItem = {
