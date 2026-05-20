@@ -428,6 +428,9 @@ export default function Checkout() {
                   onChange={update('customer_email')}
                   className={inputClass}
                 />
+                <p className="mt-1 text-[11px] leading-tight text-tengu-dark/50">
+                  Si dejás la compra sin terminar, podríamos escribirte una vez para ayudarte a finalizarla. Nada más.
+                </p>
               </FormField>
               <FormField label="Teléfono móvil" required>
                 <input
