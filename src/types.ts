@@ -41,6 +41,17 @@ export type SiteSettings = {
   customer_accounts_enabled: boolean;
   wholesale_min_kg: number;
   wholesale_lead_msg: string;
+  // Promo popup (configurable desde /admin/settings)
+  promo_enabled: boolean;
+  promo_badge: string;
+  promo_title: string;
+  promo_subtitle: string;
+  promo_body: string;
+  promo_cta_label: string;
+  promo_cta_url: string;
+  promo_image: string | null;
+  promo_expires_at: string | null;
+  promo_dismiss_days: number;
 };
 
 export type Post = {

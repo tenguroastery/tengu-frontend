@@ -9,6 +9,8 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import ScrollToTop from './components/ScrollToTop';
 import NewsletterPopup from './components/NewsletterPopup';
+import PromoPopup from './components/PromoPopup';
+import { useSiteSettings } from './store/site';
 import WhatsAppFab from './components/WhatsAppFab';
 import About from './routes/About';
 import BlogList from './routes/blog/BlogList';
@@ -52,6 +54,11 @@ export default function App() {
   const isCheckoutFlow =
     location.pathname.startsWith('/checkout') || location.pathname.startsWith('/thanks');
   const showPopup = !isAdmin && !isCheckoutFlow && location.pathname !== '/carrito';
+  // Si la promo está activa, reemplaza al newsletter popup (un solo modal
+  // por sesión para no saturar). Lee desde el store global de SiteSettings
+  // que ya carga al montar la app.
+  const siteSettings = useSiteSettings();
+  const promoActive = !!siteSettings?.promo_enabled;
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -113,7 +120,7 @@ export default function App() {
         </Routes>
       </main>
       {!isAdmin && <Footer />}
-      {showPopup && <NewsletterPopup />}
+      {showPopup && (promoActive ? <PromoPopup /> : <NewsletterPopup />)}
       {!isAdmin && <WhatsAppFab />}
       {!isAdmin && <CookieBanner />}
     </div>
