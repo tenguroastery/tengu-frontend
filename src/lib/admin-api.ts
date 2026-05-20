@@ -1,4 +1,5 @@
 import { formatApiError } from './api';
+import { notifyInvalidation } from './useRevalidateOnFocus';
 import { useAdmin } from '../store/admin';
 import type { Order, Post, SiteSettings } from '../types';
 
@@ -34,6 +35,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     } catch { /* ignore */ }
     throw new Error(detail);
   }
+  // Cualquier mutation exitosa avisa a las pestañas del sitio público que
+  // refresquen catálogo/settings (BroadcastChannel). Excepciones: login/me
+  // (sólo cambian sesión), uploads (ya disparan otra mutation con el slug).
+  const method = (init.method || 'GET').toUpperCase();
+  if (method !== 'GET' && !path.startsWith('/admin/login') && !path.startsWith('/admin/me')) {
+    notifyInvalidation();
+  }
+
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }

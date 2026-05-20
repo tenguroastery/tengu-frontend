@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
 import { validateRut } from '../lib/rut';
+import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { useAuth } from '../store/auth';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import type { ShippingMethod, ShippingMode, ShippingQuote, SiteSettings } from '../types';
@@ -100,14 +101,17 @@ export default function Checkout() {
   const inFlightRef = useRef<boolean>(false);
 
   const reconcile = useCart((s) => s.reconcile);
+  const tick = useRevalidationTick();
 
-  // Site settings (umbral envío gratis, etc.) — una sola vez
+  // Site settings (umbral envío gratis, etc.) + reconcilia carrito contra
+  // precios/stock actuales. `tick` fuerza refetch al volver del admin o al
+  // recuperar foco — crítico para que un cambio de precio en /admin no
+  // pague el precio viejo si el usuario quedó en /checkout abierto.
   useEffect(() => {
     api.getSiteSettings().then(setSiteSettings).catch(() => undefined);
     api.listRegions().then(setRegions).catch(() => undefined);
-    // Reconcilia el cart contra precios actuales antes de cobrar.
     api.listProducts().then((fresh) => reconcile(fresh)).catch(() => undefined);
-  }, [reconcile]);
+  }, [reconcile, tick]);
 
   // Comunas de la región seleccionada (relación padre-hijo).
   const comunasOfRegion = useMemo(() => {

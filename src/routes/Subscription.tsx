@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Breadcrumbs from '../components/Breadcrumbs';
 import { api, formatCLP, formatSize, pricePerKg } from '../lib/api';
+import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { useSeo } from '../lib/seo';
 import { useSiteSettings } from '../store/site';
 import type { Product, ShippingMethod } from '../types';
@@ -69,6 +70,7 @@ export default function Subscription() {
   // conservan en git history (commit anterior) para restaurar cuando se
   // reactiven. El form ahora redirige a WhatsApp para coordinar manual.
 
+  const tick = useRevalidationTick();
   useEffect(() => {
     api.listProducts()
       .then((p) => {
@@ -81,7 +83,7 @@ export default function Subscription() {
       .catch(console.error)
       .finally(() => setLoading(false));
     api.listRegions().then(setRegions).catch(() => undefined);
-  }, []);
+  }, [tick]);
 
   const comunasOfRegion = useMemo(() => {
     const r = regions.find((x) => x.name === form.shipping_region);
