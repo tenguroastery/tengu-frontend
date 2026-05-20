@@ -31,6 +31,9 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
   const [description, setDescription] = useState(product?.description ?? '');
   const [featured, setFeatured] = useState(product?.featured ?? false);
   const [isPublished, setIsPublished] = useState(product?.is_published ?? true);
+  const [grindOptions, setGrindOptions] = useState<string[]>(
+    product?.grind_options ?? ['grano-entero', 'molido'],
+  );
   // 'cafe' muestra todos los campos de café. 'equipo' los oculta y usa una variante única.
   const [productKind, setProductKind] = useState<'cafe' | 'equipo'>(
     product && !product.roast_profile ? 'equipo' : 'cafe',
@@ -111,6 +114,7 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
         is_published: isPublished,
         description: description.trim() || null,
         variants,
+        grind_options: isCoffee ? grindOptions : ['grano-entero', 'molido'],
       };
 
       if (mode === 'create') {
@@ -134,6 +138,7 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
           featured: payload.featured,
           is_published: payload.is_published,
           description: payload.description,
+          grind_options: payload.grind_options,
         });
         // Variantes: solo agregar nuevas (no editar existentes, eso lo hace inline en la lista)
         const existingSizes = new Set(product.variants.map((v) => v.size_g));
@@ -318,6 +323,44 @@ export default function ProductForm({ mode, product, onClose, onSaved }: Props) 
                   className={input}
                 />
               </Field>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-xs uppercase tracking-wider text-tengu-dark/60">
+                Moliendas disponibles para este café
+              </p>
+              <p className="mt-1 text-[11px] text-tengu-dark/50">
+                Por defecto: grano entero + molido (medio). Activá las específicas si querés que el cliente elija el método.
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {([
+                  { v: 'grano-entero', label: 'Grano entero' },
+                  { v: 'molido', label: 'Molido (medio)' },
+                  { v: 'espresso', label: 'Molido espresso' },
+                  { v: 'v60', label: 'Molido V60' },
+                  { v: 'aeropress', label: 'Molido AeroPress' },
+                  { v: 'prensa-francesa', label: 'Molido prensa francesa' },
+                  { v: 'moka', label: 'Molido moka' },
+                ] as const).map((opt) => (
+                  <label
+                    key={opt.v}
+                    className="flex cursor-pointer items-center gap-2 rounded-md border border-tengu-dark/15 bg-white px-3 py-2 text-xs hover:border-tengu-ink"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={grindOptions.includes(opt.v)}
+                      onChange={(e) =>
+                        setGrindOptions((prev) =>
+                          e.target.checked
+                            ? Array.from(new Set([...prev, opt.v]))
+                            : prev.filter((g) => g !== opt.v),
+                        )
+                      }
+                      className="h-4 w-4 accent-tengu-mustard"
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </fieldset>}
 

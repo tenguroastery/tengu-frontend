@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, formatSize } from '../lib/api';
+import { grindLabel } from '../lib/grind';
 import { useCart } from '../store/cart';
 import type { Order } from '../types';
 
@@ -197,7 +198,7 @@ export default function Thanks() {
               <span className="flex-1">
                 {item.product_name}
                 <span className="ml-2 text-xs text-tengu-dark/60">
-                  {formatSize(item.size_g)} · {item.quantity}x
+                  {formatSize(item.size_g)} · {item.quantity}x · {grindLabel(item.grind)}
                 </span>
               </span>
               <span className="font-semibold">{formatCLP(item.subtotal_clp)}</span>

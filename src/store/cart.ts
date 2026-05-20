@@ -10,6 +10,8 @@ export type CartItem = {
   sizeG: number;
   unitPriceClp: number;
   quantity: number;
+  /** Slug de molienda: 'grano-entero' | 'molido' | 'espresso' | 'v60' | 'aeropress' | 'prensa-francesa' | 'moka' */
+  grind: string;
 };
 
 export type CartReconcileReport = {
@@ -29,7 +31,7 @@ type CartState = {
   reconcile: (freshProducts: Product[]) => CartReconcileReport;
 };
 
-const itemKey = (slug: string, sizeG: number) => `${slug}::${sizeG}`;
+const itemKey = (slug: string, sizeG: number, grind: string) => `${slug}::${sizeG}::${grind}`;
 
 export const useCart = create<CartState>()(
   persist(
@@ -37,7 +39,8 @@ export const useCart = create<CartState>()(
       items: [],
       addItem: (item, quantity = 1) =>
         set((state) => {
-          const key = itemKey(item.productSlug, item.sizeG);
+          const grind = item.grind || 'grano-entero';
+          const key = itemKey(item.productSlug, item.sizeG, grind);
           const existing = state.items.find((i) => i.key === key);
           if (existing) {
             return {
@@ -46,7 +49,7 @@ export const useCart = create<CartState>()(
               ),
             };
           }
-          return { items: [...state.items, { ...item, key, quantity }] };
+          return { items: [...state.items, { ...item, grind, key, quantity }] };
         }),
       removeItem: (key) => set((state) => ({ items: state.items.filter((i) => i.key !== key) })),
       setQuantity: (key, quantity) =>
@@ -70,15 +73,34 @@ export const useCart = create<CartState>()(
             report.removed.push(item.productName);
             continue;
           }
+          // Migración suave del localStorage viejo: items sin `grind`
+          // asumimos grano entero. La key se recomputa por si era el formato viejo slug::size.
+          const grind = item.grind || 'grano-entero';
+          const allowed = product.grind_options ?? ['grano-entero', 'molido'];
+          if (!allowed.includes(grind)) {
+            // Admin sacó esa molienda → fallback a la primera disponible
+            // o saca el item si quedó incompatible.
+            report.removed.push(`${item.productName} (molienda ya no disponible)`);
+            continue;
+          }
+          const reKey = itemKey(item.productSlug, item.sizeG, grind);
           // Imagen del producto puede haber cambiado de filename (timestamp).
           // Guardamos solo el filename; el render prepende /uploads/.
           const freshImage = product.image ?? null;
-          if (variant.price_clp !== item.unitPriceClp || product.name !== item.productName || freshImage !== item.productImage) {
+          const needsUpdate =
+            variant.price_clp !== item.unitPriceClp ||
+            product.name !== item.productName ||
+            freshImage !== item.productImage ||
+            item.grind !== grind ||
+            item.key !== reKey;
+          if (needsUpdate) {
             if (variant.price_clp !== item.unitPriceClp) {
               report.priceUpdated.push(product.name);
             }
             newItems.push({
               ...item,
+              key: reKey,
+              grind,
               productName: product.name,
               productImage: freshImage,
               unitPriceClp: variant.price_clp,

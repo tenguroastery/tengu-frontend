@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { adminApi } from '../../lib/admin-api';
 import { formatCLP } from '../../lib/api';
+import { grindLabel } from '../../lib/grind';
 import type { Order } from '../../types';
 
 const STATUS_OPTIONS = ['pending', 'paid', 'shipped', 'delivered', 'failed', 'canceled'] as const;
@@ -146,7 +147,12 @@ function OrderDetail({
         <ul className="mt-2 divide-y divide-tengu-dark/10 text-sm">
           {order.items.map((it) => (
             <li key={it.id} className="flex justify-between py-1.5">
-              <span>{it.product_name} · {it.size_g >= 1000 ? `${it.size_g / 1000} kg` : `${it.size_g} g`} × {it.quantity}</span>
+              <span>
+                {it.product_name} · {it.size_g >= 1000 ? `${it.size_g / 1000} kg` : `${it.size_g} g`} × {it.quantity}
+                <span className="ml-2 rounded bg-tengu-mustard/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
+                  {grindLabel(it.grind)}
+                </span>
+              </span>
               <span className="font-semibold">{formatCLP(it.subtotal_clp)}</span>
             </li>
           ))}

@@ -135,6 +135,7 @@ export default function Checkout() {
             size_g: i.sizeG,
             unit_price_clp: i.unitPriceClp,
             quantity: i.quantity,
+            grind: i.grind,
           })),
           subtotal_clp: subtotal,
         })
@@ -327,6 +328,7 @@ export default function Checkout() {
           product_slug: i.productSlug,
           size_g: i.sizeG,
           quantity: i.quantity,
+          grind: i.grind,
         })),
       });
 

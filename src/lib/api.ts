@@ -137,7 +137,7 @@ export const api = {
     customer_email: string;
     customer_name?: string;
     customer_phone?: string;
-    items: { product_slug: string; product_name: string; size_g: number; unit_price_clp: number; quantity: number }[];
+    items: { product_slug: string; product_name: string; size_g: number; unit_price_clp: number; quantity: number; grind?: string }[];
     subtotal_clp: number;
   }) =>
     request<void>('/cart-events', { method: 'POST', body: JSON.stringify(payload) }),

@@ -6,6 +6,7 @@ import ReviewsSection from '../components/ReviewsSection';
 import SafeImg from '../components/SafeImg';
 import { ecommerceEvents } from '../lib/analytics';
 import { api, formatCLP, pricePerKg } from '../lib/api';
+import { GRIND_LABELS, type GrindValue } from '../lib/grind';
 import { setStructuredData, useSeo } from '../lib/seo';
 import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { useCart } from '../store/cart';
@@ -17,6 +18,8 @@ export default function Product() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
+  const [grindMode, setGrindMode] = useState<'grano' | 'molido'>('grano');
+  const [grindMethod, setGrindMethod] = useState<string>('molido');
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -86,6 +89,25 @@ export default function Product() {
 
   const variant = product.variants.find((v) => v.size_g === selectedSize) ?? product.variants[0];
 
+  // Si solo está "grano-entero" y "molido", no hay paso 2; cuando elige
+  // "Molido", se guarda como 'molido' genérico. Si hay métodos específicos
+  // habilitados (espresso/v60/etc.), el paso 2 se activa.
+  const allowed = product.grind_options ?? ['grano-entero', 'molido'];
+  const specificMethods = allowed.filter((g) =>
+    ['espresso', 'v60', 'aeropress', 'prensa-francesa', 'moka'].includes(g),
+  );
+  const hasMolido = allowed.includes('molido');
+  const hasGrano = allowed.includes('grano-entero');
+  const showStep2 = grindMode === 'molido' && specificMethods.length > 0;
+
+  // Resolver el slug final que se guarda como `grind`:
+  const finalGrind =
+    grindMode === 'grano'
+      ? 'grano-entero'
+      : showStep2
+      ? grindMethod
+      : 'molido';
+
   const handleAdd = () => {
     addItem(
       {
@@ -94,6 +116,7 @@ export default function Product() {
         productImage: product.image,
         sizeG: variant.size_g,
         unitPriceClp: variant.price_clp,
+        grind: finalGrind,
       },
       quantity,
     );
@@ -176,6 +199,58 @@ export default function Product() {
               ))}
             </div>
           </div>
+
+          {(hasGrano || hasMolido) && (
+            <div className="mt-6">
+              <p className="text-xs uppercase tracking-wider text-tengu-dark/60">Molienda</p>
+              <div className="mt-2 flex gap-2">
+                {hasGrano && (
+                  <button
+                    onClick={() => setGrindMode('grano')}
+                    className={`rounded-md border px-4 py-2 text-sm transition ${
+                      grindMode === 'grano'
+                        ? 'border-tengu-ink bg-tengu-ink text-white'
+                        : 'border-tengu-dark/20 bg-white hover:border-tengu-ink'
+                    }`}
+                  >
+                    Grano entero
+                  </button>
+                )}
+                {hasMolido && (
+                  <button
+                    onClick={() => setGrindMode('molido')}
+                    className={`rounded-md border px-4 py-2 text-sm transition ${
+                      grindMode === 'molido'
+                        ? 'border-tengu-ink bg-tengu-ink text-white'
+                        : 'border-tengu-dark/20 bg-white hover:border-tengu-ink'
+                    }`}
+                  >
+                    Molido
+                  </button>
+                )}
+              </div>
+              {showStep2 && (
+                <div className="mt-3">
+                  <p className="text-[11px] text-tengu-dark/60">¿Para qué método?</p>
+                  <div className="mt-1.5 flex flex-wrap gap-2">
+                    {specificMethods.map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setGrindMethod(m)}
+                        className={`rounded-md border px-3 py-1.5 text-xs transition ${
+                          grindMethod === m
+                            ? 'border-tengu-mustard bg-tengu-mustard text-tengu-dark'
+                            : 'border-tengu-dark/20 bg-white hover:border-tengu-mustard'
+                        }`}
+                      >
+                        {GRIND_LABELS[m as GrindValue] ?? m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mt-6">
             <p className="text-xs uppercase tracking-wider text-tengu-dark/60">Cantidad</p>

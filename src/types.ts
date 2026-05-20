@@ -25,6 +25,8 @@ export type Product = {
   is_published: boolean;
   description: string | null;
   variants: Variant[];
+  /** Slugs de moliendas habilitadas para este producto. */
+  grind_options: string[];
 };
 
 export type ShippingMethod = 'rm' | 'regiones' | 'pickup';
@@ -70,6 +72,7 @@ export type OrderItemPayload = {
   product_slug: string;
   size_g: number;
   quantity: number;
+  grind?: string;
 };
 
 export type OrderPayload = {
@@ -97,6 +100,7 @@ export type OrderItem = {
   unit_price_clp: number;
   quantity: number;
   subtotal_clp: number;
+  grind: string;
 };
 
 export type PaymentMethod = 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago';

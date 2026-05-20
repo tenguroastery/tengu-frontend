@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import SafeImg from '../components/SafeImg';
 import { api, formatCLP, formatSize } from '../lib/api';
+import { grindLabel } from '../lib/grind';
 import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import { useSiteSettings } from '../store/site';
@@ -105,7 +106,9 @@ export default function Cart() {
                     Quitar
                   </button>
                 </div>
-                <p className="text-sm text-tengu-dark/60">Formato: {formatSize(item.sizeG)}</p>
+                <p className="text-sm text-tengu-dark/60">
+                  Formato: {formatSize(item.sizeG)} · Molienda: {grindLabel(item.grind)}
+                </p>
                 <div className="mt-2 flex items-center justify-between">
                   <div className="inline-flex items-center rounded-md border border-tengu-dark/20 bg-white">
                     <button

@@ -75,6 +75,7 @@ export type AdminProduct = {
   is_published: boolean;
   description: string | null;
   variants: AdminVariant[];
+  grind_options: string[];
 };
 
 export type ProductCreatePayload = {
@@ -96,6 +97,7 @@ export type ProductCreatePayload = {
   is_published: boolean;
   description?: string | null;
   variants: { size_g: number; price_clp: number; stock_qty: number }[];
+  grind_options?: string[];
 };
 
 export type ProductPatchPayload = Partial<Omit<ProductCreatePayload, 'slug' | 'variants'>>;
