@@ -133,6 +133,14 @@ export const api = {
     }),
   createOrder: (payload: OrderPayload) =>
     request<Order>('/orders', { method: 'POST', body: JSON.stringify(payload) }),
+  registerCartEvent: (payload: {
+    customer_email: string;
+    customer_name?: string;
+    customer_phone?: string;
+    items: { product_slug: string; product_name: string; size_g: number; unit_price_clp: number; quantity: number }[];
+    subtotal_clp: number;
+  }) =>
+    request<void>('/cart-events', { method: 'POST', body: JSON.stringify(payload) }),
   getOrder: (orderId: number, token: string) =>
     request<Order>(`/orders/${orderId}?token=${encodeURIComponent(token)}`),
   initWebpay: (orderId: number) =>

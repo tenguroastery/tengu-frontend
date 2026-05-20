@@ -114,6 +114,38 @@ export default function Checkout() {
     api.listProducts().then((fresh) => reconcile(fresh)).catch(() => undefined);
   }, [reconcile, tick]);
 
+  // Carrito abandonado: cuando el cliente escribió email válido y hay items,
+  // mandamos un beacon al backend (debounced) para que aparezca en /admin/carritos.
+  // Si después completa la orden, el backend lo marca recovered solo.
+  useEffect(() => {
+    const email = form.customer_email.trim().toLowerCase();
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!emailValid || items.length === 0) return;
+    const ctl = new AbortController();
+    const t = setTimeout(() => {
+      if (ctl.signal.aborted) return;
+      api
+        .registerCartEvent({
+          customer_email: email,
+          customer_name: form.customer_name.trim() || undefined,
+          customer_phone: form.customer_phone.trim() || undefined,
+          items: items.map((i) => ({
+            product_slug: i.productSlug,
+            product_name: i.productName,
+            size_g: i.sizeG,
+            unit_price_clp: i.unitPriceClp,
+            quantity: i.quantity,
+          })),
+          subtotal_clp: subtotal,
+        })
+        .catch(() => undefined);
+    }, 2000);
+    return () => {
+      ctl.abort();
+      clearTimeout(t);
+    };
+  }, [form.customer_email, form.customer_name, form.customer_phone, items, subtotal]);
+
   // Comunas de la región seleccionada (relación padre-hijo).
   const comunasOfRegion = useMemo(() => {
     const r = regions.find((x) => x.name === form.shipping_region);

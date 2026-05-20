@@ -156,6 +156,27 @@ export type ProcessSubOut = {
   order: Order;
 };
 
+export type AbandonedCart = {
+  id: number;
+  customer_email: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  items: Array<{
+    product_slug: string;
+    product_name: string;
+    size_g: number;
+    unit_price_clp: number;
+    quantity: number;
+  }>;
+  subtotal_clp: number;
+  status: 'open' | 'recovered' | 'dismissed';
+  recovered_order_id: number | null;
+  admin_notes: string | null;
+  last_reminder_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AdminReview = {
   id: number;
   product_slug: string;
@@ -291,6 +312,17 @@ export const adminApi = {
     }),
   deleteComunaZone: (id: number) =>
     request<void>(`/admin/site/comuna-zones/${id}`, { method: 'DELETE' }),
+
+  // Carritos abandonados
+  listAbandonedCarts: (status?: string) =>
+    request<AbandonedCart[]>(`/admin/abandoned-carts${status ? `?status=${status}` : ''}`),
+  updateAbandonedCart: (id: number, payload: { status?: 'open' | 'dismissed'; admin_notes?: string; mark_reminded?: boolean }) =>
+    request<AbandonedCart>(`/admin/abandoned-carts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+  deleteAbandonedCart: (id: number) =>
+    request<void>(`/admin/abandoned-carts/${id}`, { method: 'DELETE' }),
 
   // Reseñas
   listReviews: (status?: string) =>

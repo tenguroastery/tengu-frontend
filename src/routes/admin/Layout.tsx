@@ -47,6 +47,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/products" className={linkClass}>☕ Productos</NavLink>
           <NavLink to="/admin/categories" className={linkClass}>🏷 Categorías</NavLink>
           <NavLink to="/admin/orders" className={linkClass}>📦 Pedidos</NavLink>
+          <NavLink to="/admin/carritos" className={linkClass}>🛒 Carritos</NavLink>
           <NavLink to="/admin/reviews" className={linkClass}>⭐ Reseñas</NavLink>
           <NavLink to="/admin/posts" className={linkClass}>📝 Blog</NavLink>
           <NavLink to="/admin/coffee-subscriptions" className={linkClass}>🔁 Suscripciones café</NavLink>
