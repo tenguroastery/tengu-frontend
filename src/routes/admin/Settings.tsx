@@ -136,6 +136,95 @@ export default function AdminSettings() {
           </label>
         </Section>
 
+        <Section title="Barra anunciante (Black Friday / eventos)">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={draft.announcement_enabled}
+              onChange={(e) => setDraft({ ...draft, announcement_enabled: e.target.checked })}
+              className="mt-1 h-4 w-4 accent-tengu-mustard"
+            />
+            <div>
+              <p className="text-sm font-medium text-tengu-dark">Activar mensaje custom en la barra superior</p>
+              <p className="mt-1 text-xs text-tengu-dark/60">
+                Si está activado, reemplaza los 3 mensajes default (envío gratis / tueste / despacho) por este. Útil para eventos puntuales tipo Black Friday, CyberDay, fin de semana de cata, etc. Al apagarse, vuelven los mensajes default.
+              </p>
+            </div>
+          </label>
+          <Field label="Mensaje" hint="Una línea. Ej: '🛍 BLACK FRIDAY — 20% off con código BF2026'">
+            <input
+              value={draft.announcement_text}
+              onChange={(e) => setDraft({ ...draft, announcement_text: e.target.value })}
+              placeholder="🛍 BLACK FRIDAY — 20% off con código BF2026"
+              maxLength={200}
+              className={inputCls}
+            />
+          </Field>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Texto del link (opcional)">
+              <input
+                value={draft.announcement_link_label ?? ''}
+                onChange={(e) => setDraft({ ...draft, announcement_link_label: e.target.value || null })}
+                placeholder="Ver ofertas"
+                maxLength={60}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Link" hint="Ruta interna o URL completa.">
+              <input
+                value={draft.announcement_link_url ?? ''}
+                onChange={(e) => setDraft({ ...draft, announcement_link_url: e.target.value || null })}
+                placeholder="/tienda"
+                maxLength={300}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Field label="Color de fondo">
+              <input
+                type="color"
+                value={draft.announcement_bg_color}
+                onChange={(e) => setDraft({ ...draft, announcement_bg_color: e.target.value })}
+                className="h-10 w-full cursor-pointer rounded-md border border-tengu-dark/15 bg-white"
+              />
+            </Field>
+            <Field label="Color del texto">
+              <input
+                type="color"
+                value={draft.announcement_text_color}
+                onChange={(e) => setDraft({ ...draft, announcement_text_color: e.target.value })}
+                className="h-10 w-full cursor-pointer rounded-md border border-tengu-dark/15 bg-white"
+              />
+            </Field>
+            <Field label="Fecha de fin" hint="Vacío = sin vencimiento.">
+              <input
+                type="date"
+                value={draft.announcement_expires_at ?? ''}
+                onChange={(e) => setDraft({ ...draft, announcement_expires_at: e.target.value || null })}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          {/* Preview */}
+          {draft.announcement_text && (
+            <div className="mt-2 rounded-md p-1">
+              <p className="mb-1 text-[11px] uppercase tracking-wider text-tengu-dark/50">Preview</p>
+              <div
+                style={{ backgroundColor: draft.announcement_bg_color, color: draft.announcement_text_color }}
+                className="flex items-center justify-center gap-3 rounded-md px-4 py-2 text-sm font-medium"
+              >
+                <span>{draft.announcement_text}</span>
+                {draft.announcement_link_url && (
+                  <span className="rounded-full border border-current/40 px-3 py-0.5 text-[11px] uppercase tracking-wider">
+                    {draft.announcement_link_label || 'Ver más'} →
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </Section>
+
         <Section title="Popup de oferta">
           <label className="flex items-start gap-3">
             <input

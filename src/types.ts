@@ -41,6 +41,14 @@ export type SiteSettings = {
   customer_accounts_enabled: boolean;
   wholesale_min_kg: number;
   wholesale_lead_msg: string;
+  // Barra anunciante (configurable desde /admin/settings)
+  announcement_enabled: boolean;
+  announcement_text: string;
+  announcement_link_url: string | null;
+  announcement_link_label: string | null;
+  announcement_bg_color: string;
+  announcement_text_color: string;
+  announcement_expires_at: string | null;
   // Promo popup (configurable desde /admin/settings)
   promo_enabled: boolean;
   promo_badge: string;
