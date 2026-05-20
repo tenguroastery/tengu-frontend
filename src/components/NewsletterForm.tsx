@@ -9,20 +9,26 @@ type Props = {
   variant?: Variant;
   placeholder?: string;
   buttonLabel?: string;
+  /** Si true, exige un checkbox de consentimiento antes de habilitar el submit.
+   * Pensado para popups donde el usuario no buscó activamente el form (LGPD). */
+  requireExplicitConsent?: boolean;
 };
 
 export default function NewsletterForm({
   variant = 'dark',
   placeholder = 'tu@correo.cl',
   buttonLabel = 'Suscribirme',
+  requireExplicitConsent = false,
 }: Props) {
   const [email, setEmail] = useState('');
+  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+    if (requireExplicitConsent && !consent) return;
     setStatus('loading');
     try {
       const res = await api.subscribe(email.trim());
@@ -59,10 +65,32 @@ export default function NewsletterForm({
           className={inputClass}
           disabled={status === 'loading'}
         />
-        <button type="submit" disabled={status === 'loading'} className={buttonClass}>
+        <button
+          type="submit"
+          disabled={status === 'loading' || (requireExplicitConsent && !consent)}
+          className={buttonClass}
+        >
           {status === 'loading' ? 'Enviando…' : buttonLabel}
         </button>
       </div>
+      {requireExplicitConsent && (
+        <label className={`mt-3 flex items-start gap-2 text-xs ${variant === 'dark' ? 'text-tengu-cream/70' : 'text-tengu-dark/70'}`}>
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 accent-tengu-mustard"
+            required
+          />
+          <span>
+            Acepto recibir comunicaciones comerciales de Tengu Roastery y la{' '}
+            <a href="/privacidad" className="underline hover:opacity-80" target="_blank" rel="noopener">
+              política de privacidad
+            </a>
+            . Podés cancelar en cualquier momento.
+          </span>
+        </label>
+      )}
       {message && (
         <p
           className={`mt-3 text-sm ${

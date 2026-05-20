@@ -105,11 +105,11 @@ export default function NewsletterPopup() {
               preparación. Te avisamos primero.
             </p>
             <div className="mt-5">
-              <NewsletterForm variant="dark" buttonLabel="Suscribirme" />
+              <NewsletterForm variant="dark" buttonLabel="Suscribirme" requireExplicitConsent />
             </div>
             <button
               onClick={dismiss}
-              className="mt-3 text-xs uppercase tracking-wider text-tengu-cream/40 hover:text-tengu-cream/70"
+              className="mt-4 inline-block rounded-md border border-tengu-cream/20 px-4 py-2 text-xs uppercase tracking-wider text-tengu-cream/70 transition hover:border-tengu-cream/50 hover:text-tengu-cream"
             >
               No, gracias
             </button>

@@ -66,9 +66,10 @@ export function useSeo({
   useEffect(() => {
     const fullTitle = buildTitle(title, rawTitle);
     const url = canonical ? `${SITE_URL}${canonical}` : SITE_URL;
-    const ogImage = (image ?? DEFAULT_IMAGE).startsWith('http')
-      ? (image ?? DEFAULT_IMAGE)
-      : `${SITE_URL}${image ?? DEFAULT_IMAGE}`;
+    // Tratamos '' como ausente (post.cover puede venir vacío). Si no, og:image
+    // queda en blanco y los shares en redes muestran un placeholder feo.
+    const rawImage = image && image.trim() ? image : DEFAULT_IMAGE;
+    const ogImage = rawImage.startsWith('http') ? rawImage : `${SITE_URL}${rawImage}`;
 
     document.title = fullTitle;
     setMeta('description', description.slice(0, 158));

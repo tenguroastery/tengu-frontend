@@ -90,6 +90,7 @@ export default function Checkout() {
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [regions, setRegions] = useState<RegionTree[]>([]);
   const [quote, setQuote] = useState<ShippingQuote | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago'>(null);
   const [error, setError] = useState<string | null>(null);
@@ -180,6 +181,7 @@ export default function Checkout() {
       return;
     }
     setQuoting(true);
+    setQuoteError(null);
     const ctl = new AbortController();
     const t = setTimeout(() => {
       api
@@ -190,8 +192,17 @@ export default function Checkout() {
           mode: selectedOption.mode ?? 'domicilio',
           subtotal_clp: subtotal,
         })
-        .then((q) => !ctl.signal.aborted && setQuote(q))
-        .catch(() => !ctl.signal.aborted && setQuote(null))
+        .then((q) => {
+          if (ctl.signal.aborted) return;
+          setQuote(q);
+          setQuoteError(null);
+        })
+        .catch((err) => {
+          if (ctl.signal.aborted) return;
+          setQuote(null);
+          const msg = err instanceof Error ? err.message : '';
+          setQuoteError(msg || 'No pudimos calcular el envío para esta comuna.');
+        })
         .finally(() => !ctl.signal.aborted && setQuoting(false));
     }, 350);
     return () => {
@@ -365,13 +376,17 @@ export default function Checkout() {
                   className={inputClass}
                 />
               </FormField>
-              <FormField label="Teléfono" required>
+              <FormField label="Teléfono móvil" required>
                 <input
                   type="tel"
                   required
+                  inputMode="tel"
+                  autoComplete="tel"
                   value={form.customer_phone}
                   onChange={update('customer_phone')}
-                  placeholder="+56 9 XXXX XXXX"
+                  placeholder="+56 9 1234 5678"
+                  pattern="^(\+?56\s?)?9\s?\d{4}\s?\d{4}$"
+                  title="Formato móvil chileno: +56 9 XXXX XXXX"
                   className={inputClass}
                 />
               </FormField>
@@ -527,6 +542,8 @@ export default function Checkout() {
                   'Gratis'
                 ) : quoting ? (
                   <span className="text-tengu-dark/50">Cotizando…</span>
+                ) : quoteError ? (
+                  <span className="text-xs text-tengu-coral">No disponible</span>
                 ) : quote ? (
                   quote.is_free ? (
                     <span className="font-semibold text-tengu-ink">Gratis 🎉</span>
@@ -539,6 +556,11 @@ export default function Checkout() {
               </dd>
             </div>
           </dl>
+          {quoteError && selectedOption.method !== 'pickup' && (
+            <p className="mt-3 rounded-md bg-tengu-coral/10 px-3 py-2 text-xs text-tengu-coral">
+              {quoteError} Revisá la comuna o escribinos por WhatsApp para coordinar.
+            </p>
+          )}
           <div className="mt-4 flex items-baseline justify-between border-t border-tengu-dark/10 pt-4">
             <span className="text-sm uppercase tracking-wider text-tengu-dark/60">Total</span>
             <span className="font-display text-2xl text-tengu-ink">{formatCLP(total)}</span>
@@ -548,29 +570,29 @@ export default function Checkout() {
               type="button"
               onClick={() => handlePayment('bank_transfer')}
               disabled={submitting !== null}
-              className="w-full rounded-md bg-tengu-ink px-4 py-3 font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark disabled:opacity-50"
+              className="w-full rounded-md bg-tengu-ink px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-tengu-mustard hover:text-tengu-dark disabled:opacity-50 sm:text-base"
             >
-              {submitting === 'bank_transfer' ? 'Creando tu pedido…' : 'Pagar con BanchilePagos'}
+              {submitting === 'bank_transfer' ? 'Creando tu pedido…' : 'BanchilePagos'}
             </button>
 
             <button
               type="button"
               onClick={() => handlePayment('mercadopago')}
               disabled={submitting !== null}
-              className="w-full rounded-md bg-[#009ee3] px-4 py-3 font-semibold uppercase tracking-wider text-white transition hover:bg-[#007eb5] disabled:opacity-50"
+              className="w-full rounded-md bg-[#009ee3] px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:bg-[#007eb5] disabled:opacity-50 sm:text-base"
             >
-              {submitting === 'mercadopago' ? 'Conectando…' : 'Pagar con Mercado Pago'}
+              {submitting === 'mercadopago' ? 'Conectando…' : 'Mercado Pago'}
             </button>
 
             <div className="relative">
               <button
                 type="button"
                 disabled
-                className="w-full cursor-not-allowed rounded-md border border-tengu-dark/15 bg-tengu-dark/5 px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark/40"
+                className="w-full cursor-not-allowed rounded-md border border-tengu-dark/15 bg-tengu-dark/5 px-4 py-3 pr-28 text-sm font-semibold uppercase tracking-wider text-tengu-dark/40 sm:text-base"
               >
                 Tarjeta · Webpay
               </button>
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-tengu-mustard px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-tengu-mustard px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
                 Próximamente
               </span>
             </div>
@@ -579,11 +601,11 @@ export default function Checkout() {
               <button
                 type="button"
                 disabled
-                className="w-full cursor-not-allowed rounded-md border border-tengu-dark/15 bg-tengu-dark/5 px-4 py-3 font-semibold uppercase tracking-wider text-tengu-dark/40"
+                className="w-full cursor-not-allowed rounded-md border border-tengu-dark/15 bg-tengu-dark/5 px-4 py-3 pr-28 text-sm font-semibold uppercase tracking-wider text-tengu-dark/40 sm:text-base"
               >
                 Transferencia · Khipu
               </button>
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-tengu-mustard px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-tengu-mustard px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-tengu-dark">
                 Próximamente
               </span>
             </div>

@@ -51,6 +51,8 @@ export default function SafeImg({
       src={src}
       alt={alt}
       className={className}
+      loading={rest.loading ?? 'lazy'}
+      decoding={rest.decoding ?? 'async'}
       onError={(e) => {
         // Defensa adicional: solo marcamos errored si el onError viene del src actual
         // (browser pudo haber comenzado la request del src anterior antes del cambio).
