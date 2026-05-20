@@ -136,21 +136,31 @@ export default function ReviewsSection({ productSlug, productName }: Props) {
 
           <div className="mt-4">
             <span className="block text-xs uppercase tracking-wider text-tengu-dark/70">Tu valoración *</span>
-            <div className="mt-2 flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  type="button"
-                  key={n}
-                  onClick={() => setRating(n)}
-                  aria-label={`${n} estrella${n > 1 ? 's' : ''}`}
-                  className="transition hover:scale-110"
-                >
-                  <Stars rating={n <= rating ? 5 : 0} size="lg" className={n > rating ? 'opacity-40' : ''} />
-                </button>
-              ))}
+            <div className="mt-2 flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((n) => {
+                const active = n <= rating;
+                return (
+                  <button
+                    type="button"
+                    key={n}
+                    onClick={() => setRating(n)}
+                    aria-label={`${n} estrella${n > 1 ? 's' : ''}`}
+                    className="transition hover:scale-110"
+                  >
+                    <svg
+                      width={28}
+                      height={28}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      fill={active ? '#C8842A' : 'rgba(15,15,15,0.15)'}
+                    >
+                      <path d="M12 2.5l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.6l-5.9 3.08 1.13-6.58L2.45 9.44l6.6-.96L12 2.5z" />
+                    </svg>
+                  </button>
+                );
+              })}
               <span className="ml-2 text-sm text-tengu-dark/60">{rating} / 5</span>
             </div>
-            {/* Simplificado: una sola fila de 5 estrellas que rellena hasta el rating. Mejor: clickeable cada estrella */}
           </div>
 
           <label className="mt-4 block">

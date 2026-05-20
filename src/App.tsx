@@ -27,6 +27,7 @@ import AdminLoginVerify from './routes/admin/LoginVerify';
 import AdminOrders from './routes/admin/Orders';
 import AdminPosts from './routes/admin/Posts';
 import AdminProducts from './routes/admin/Products';
+import AdminReviews from './routes/admin/Reviews';
 import AdminSettings from './routes/admin/Settings';
 import AdminShipping from './routes/admin/Shipping';
 import AdminSubscriptions from './routes/admin/Subscriptions';
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="reviews" element={<AdminReviews />} />
             <Route path="posts" element={<AdminPosts />} />
             <Route path="coffee-subscriptions" element={<AdminCoffeeSubscriptions />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />

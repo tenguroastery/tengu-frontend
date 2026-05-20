@@ -147,6 +147,27 @@ export type ProcessSubOut = {
   order: Order;
 };
 
+export type AdminReview = {
+  id: number;
+  product_slug: string;
+  customer_name: string;
+  customer_email: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_notes: string | null;
+  approved_at: string | null;
+  created_at: string;
+};
+
+export type ReviewModeratePayload = {
+  status?: 'pending' | 'approved' | 'rejected';
+  admin_notes?: string;
+  title?: string;
+  body?: string;
+};
+
 export const adminApi = {
   login: (email: string, password: string) =>
     request<{ jwt: string; email: string; expires_in_hours: number }>('/admin/login', {
@@ -261,6 +282,17 @@ export const adminApi = {
     }),
   deleteComunaZone: (id: number) =>
     request<void>(`/admin/site/comuna-zones/${id}`, { method: 'DELETE' }),
+
+  // Reseñas
+  listReviews: (status?: string) =>
+    request<AdminReview[]>(`/admin/reviews${status ? `?status=${status}` : ''}`),
+  moderateReview: (id: number, payload: ReviewModeratePayload) =>
+    request<AdminReview>(`/admin/reviews/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+  deleteReview: (id: number) =>
+    request<void>(`/admin/reviews/${id}`, { method: 'DELETE' }),
 };
 
 export type AdminShippingRate = {
