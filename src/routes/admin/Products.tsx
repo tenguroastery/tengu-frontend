@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import SafeImg from '../../components/SafeImg';
 import { adminApi, type AdminProduct, type AdminVariant } from '../../lib/admin-api';
 import { formatCLP } from '../../lib/api';
+import { formatBytes, optimizeImage } from '../../lib/imageOptimize';
 import ProductForm from './ProductForm';
 
 export default function AdminProducts() {
@@ -47,8 +48,17 @@ export default function AdminProducts() {
     setUploadingFor(slug);
     setError(null);
     try {
-      const updated = await adminApi.uploadProductImage(slug, file);
+      // Comprime en el browser antes de subir (Canvas → WebP). Bypass del
+      // problema de Pillow en Azure y reduce ~95% el tamaño que va a la red.
+      const opt = await optimizeImage(file);
+      const updated = await adminApi.uploadProductImage(slug, opt.file);
       setProducts((prev) => prev.map((p) => (p.slug === slug ? { ...p, image: updated.image } : p)));
+      if (opt.optimized) {
+        // Toast informativo — usamos error state como banner neutral.
+        setError(`✓ ${slug}: ${formatBytes(opt.originalBytes)} → ${formatBytes(opt.optimizedBytes)} optimizada y subida`);
+        // Limpia el aviso después de 5s
+        setTimeout(() => setError((e) => (e?.startsWith('✓ ' + slug) ? null : e)), 5000);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

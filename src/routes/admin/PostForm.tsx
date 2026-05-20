@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { adminApi } from '../../lib/admin-api';
+import { optimizeImage } from '../../lib/imageOptimize';
 import type { Post } from '../../types';
 
 type Props = {
@@ -149,7 +150,9 @@ export default function PostForm({ post, onClose, onSaved }: Props) {
                     setUploadingCover(true);
                     setError(null);
                     try {
-                      const res = await adminApi.uploadImage(file);
+                      // Comprime en el browser antes de subir (Canvas → WebP)
+                      const opt = await optimizeImage(file);
+                      const res = await adminApi.uploadImage(opt.file);
                       setCover(res.url);
                     } catch (err) {
                       setError(err instanceof Error ? err.message : 'Error subiendo imagen');
