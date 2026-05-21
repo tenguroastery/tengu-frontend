@@ -57,6 +57,9 @@ export type SiteSettings = {
   announcement_expires_at: string | null;
   // Promo popup (configurable desde /admin/settings)
   promo_enabled: boolean;
+  promo_trigger: 'exit' | 'delay' | 'scroll' | 'immediate';
+  promo_delay_seconds: number;
+  promo_show_countdown: boolean;
   promo_badge: string;
   promo_title: string;
   promo_subtitle: string;

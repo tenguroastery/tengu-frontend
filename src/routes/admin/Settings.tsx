@@ -248,7 +248,53 @@ export default function AdminSettings() {
             <div>
               <p className="text-sm font-medium text-tengu-dark">Activar popup de oferta</p>
               <p className="mt-1 text-xs text-tengu-dark/60">
-                Si está activado, reemplaza al popup de newsletter en el sitio público. Se muestra al cliente al hacer exit-intent (desktop) o tras dwell+scroll (mobile).
+                Si está activado, reemplaza al popup de newsletter en el sitio público.
+              </p>
+            </div>
+          </label>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Cuándo aparece" hint="Inmediato es más agresivo (Black Friday). Exit-intent es más amable.">
+              <select
+                value={draft.promo_trigger}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    promo_trigger: e.target.value as 'exit' | 'delay' | 'scroll' | 'immediate',
+                  })
+                }
+                className={inputCls}
+              >
+                <option value="exit">Al salir / inactivo (default)</option>
+                <option value="immediate">Inmediato (al cargar)</option>
+                <option value="delay">Después de X segundos</option>
+                <option value="scroll">Cuando hace scroll (25%)</option>
+              </select>
+            </Field>
+            <Field label="Segundos de espera" hint="Solo aplica si trigger = 'Después de X segundos'.">
+              <input
+                type="number"
+                min={0}
+                max={600}
+                value={draft.promo_delay_seconds}
+                onChange={(e) =>
+                  setDraft({ ...draft, promo_delay_seconds: parseInt(e.target.value || '0', 10) })
+                }
+                disabled={draft.promo_trigger !== 'delay'}
+                className={`${inputCls} disabled:opacity-50`}
+              />
+            </Field>
+          </div>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={draft.promo_show_countdown}
+              onChange={(e) => setDraft({ ...draft, promo_show_countdown: e.target.checked })}
+              className="mt-1 h-4 w-4 accent-tengu-mustard"
+            />
+            <div>
+              <p className="text-sm font-medium text-tengu-dark">Mostrar contador regresivo</p>
+              <p className="mt-1 text-xs text-tengu-dark/60">
+                "Termina en 02d 14h 33m". Requiere fecha de fin abajo. Sube urgencia y conversión en eventos cortos.
               </p>
             </div>
           </label>
