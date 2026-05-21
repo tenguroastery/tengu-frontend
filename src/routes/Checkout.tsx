@@ -7,7 +7,7 @@ import { validateRut } from '../lib/rut';
 import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { useAuth } from '../store/auth';
 import { selectCartSubtotal, useCart } from '../store/cart';
-import type { ShippingMethod, ShippingMode, ShippingQuote, SiteSettings } from '../types';
+import type { CouponPreview, ShippingMethod, ShippingMode, ShippingQuote, SiteSettings } from '../types';
 
 const PREFILL_KEY = 'tengu-checkout-prefill-v1';
 
@@ -95,6 +95,9 @@ export default function Checkout() {
   const [quoting, setQuoting] = useState(false);
   const [submitting, setSubmitting] = useState<null | 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago'>(null);
   const [error, setError] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
   const [webpay, setWebpay] = useState<{ url: string; token: string } | null>(null);
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -250,7 +253,61 @@ export default function Checkout() {
   }, [selectedOption, form.shipping_region, form.shipping_comuna, cartWeightG, subtotal]);
 
   const shippingCost = quote?.cost_clp ?? 0;
-  const total = subtotal + shippingCost;
+  const couponDiscount = coupon?.valid ? coupon.discount_clp : 0;
+  const total = Math.max(0, subtotal - couponDiscount) + shippingCost;
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponLoading(true);
+    setError(null);
+    try {
+      const preview = await api.validateCoupon({
+        code,
+        subtotal_clp: subtotal,
+        items: items.map((i) => ({
+          product_slug: i.productSlug,
+          subtotal_clp: i.unitPriceClp * i.quantity,
+        })),
+      });
+      setCoupon(preview);
+    } catch (err) {
+      setCoupon({
+        valid: false,
+        code: code.toUpperCase(),
+        discount_clp: 0,
+        kind: null,
+        value: null,
+        message: err instanceof Error ? err.message : 'Error validando código',
+        description: null,
+      });
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const clearCoupon = () => {
+    setCoupon(null);
+    setCouponInput('');
+  };
+
+  // Re-valida si cambia el subtotal (el cupón puede pasar a no cumplir min_subtotal_clp)
+  useEffect(() => {
+    if (!coupon?.valid) return;
+    const code = coupon.code;
+    api
+      .validateCoupon({
+        code,
+        subtotal_clp: subtotal,
+        items: items.map((i) => ({
+          product_slug: i.productSlug,
+          subtotal_clp: i.unitPriceClp * i.quantity,
+        })),
+      })
+      .then(setCoupon)
+      .catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotal]);
   const freeShippingThreshold = siteSettings?.free_shipping_threshold_clp ?? 0;
   const remainingForFreeShipping = freeShippingThreshold > 0 ? freeShippingThreshold - subtotal : 0;
 
@@ -324,6 +381,7 @@ export default function Checkout() {
         // Honeypot: el input #website es invisible y los humanos nunca lo
         // tocan; si llega lleno, el backend rechaza con 422.
         website: honeypotRef.current?.value || undefined,
+        coupon_code: coupon?.valid ? coupon.code : undefined,
         items: items.map((i) => ({
           product_slug: i.productSlug,
           size_g: i.sizeG,
@@ -593,6 +651,14 @@ export default function Checkout() {
               <dt>Subtotal</dt>
               <dd>{formatCLP(subtotal)}</dd>
             </div>
+            {coupon?.valid && couponDiscount > 0 && (
+              <div className="flex justify-between text-tengu-ink">
+                <dt>
+                  Descuento <span className="text-xs text-tengu-dark/50">({coupon.code})</span>
+                </dt>
+                <dd className="font-semibold">− {formatCLP(couponDiscount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt>Envío</dt>
               <dd>
@@ -619,6 +685,49 @@ export default function Checkout() {
               {quoteError} Revisá la comuna o escribinos por WhatsApp para coordinar.
             </p>
           )}
+
+          {/* Cupón de descuento */}
+          <div className="mt-4 border-t border-tengu-dark/10 pt-4">
+            <p className="text-xs uppercase tracking-wider text-tengu-dark/60">¿Tenés un código?</p>
+            {coupon?.valid ? (
+              <div className="mt-2 flex items-center justify-between rounded-md bg-tengu-ink/5 px-3 py-2">
+                <div className="text-sm">
+                  <span className="font-semibold text-tengu-ink">{coupon.code}</span>{' '}
+                  <span className="text-xs text-tengu-dark/60">aplicado · −{formatCLP(coupon.discount_clp)}</span>
+                </div>
+                <button
+                  onClick={clearCoupon}
+                  className="text-xs uppercase tracking-wider text-tengu-dark/50 hover:text-tengu-coral"
+                >
+                  Quitar
+                </button>
+              </div>
+            ) : (
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="text"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), applyCoupon())}
+                  placeholder="BF2026"
+                  maxLength={40}
+                  className="flex-1 rounded-md border border-tengu-dark/15 px-3 py-2 text-sm uppercase tracking-wider"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={couponLoading || !couponInput.trim()}
+                  className="rounded-md bg-tengu-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-tengu-cream transition hover:bg-tengu-dark disabled:opacity-50"
+                >
+                  {couponLoading ? '…' : 'Aplicar'}
+                </button>
+              </div>
+            )}
+            {coupon && !coupon.valid && coupon.message && (
+              <p className="mt-2 text-xs text-tengu-coral">{coupon.message}</p>
+            )}
+          </div>
+
           <div className="mt-4 flex items-baseline justify-between border-t border-tengu-dark/10 pt-4">
             <span className="text-sm uppercase tracking-wider text-tengu-dark/60">Total</span>
             <span className="font-display text-2xl text-tengu-ink">{formatCLP(total)}</span>

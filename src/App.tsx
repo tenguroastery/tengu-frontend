@@ -23,6 +23,7 @@ import Subscription from './routes/Subscription';
 import AdminAbandonedCarts from './routes/admin/AbandonedCarts';
 import AdminCategories from './routes/admin/Categories';
 import AdminCoffeeSubscriptions from './routes/admin/CoffeeSubscriptions';
+import AdminCoupons from './routes/admin/Coupons';
 import AdminDashboard from './routes/admin/Dashboard';
 import AdminLayout from './routes/admin/Layout';
 import AdminLogin from './routes/admin/Login';
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="categories" element={<AdminCategories />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="carritos" element={<AdminAbandonedCarts />} />
+            <Route path="cupones" element={<AdminCoupons />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="posts" element={<AdminPosts />} />
             <Route path="coffee-subscriptions" element={<AdminCoffeeSubscriptions />} />
