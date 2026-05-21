@@ -26,7 +26,7 @@ export default function AdminProducts() {
 
   useEffect(reload, []);
 
-  const handleVariantUpdate = async (variant: AdminVariant, field: 'price_clp' | 'stock_qty', value: number) => {
+  const handleVariantUpdate = async (variant: AdminVariant, field: 'price_clp' | 'stock_qty' | 'compare_at_price_clp', value: number) => {
     setSavingVariant(variant.id);
     setError(null);
     try {
@@ -234,6 +234,9 @@ export default function AdminProducts() {
                       <tr className="border-b border-tengu-dark/10 text-left text-xs uppercase tracking-wider text-tengu-dark/60">
                         <th className="py-2">Formato</th>
                         <th className="py-2">Precio CLP</th>
+                        <th className="py-2" title="Precio anterior tachado (oferta). 0 = sin oferta.">
+                          Antes <span className="text-[10px] text-tengu-dark/40">(opcional)</span>
+                        </th>
                         <th className="py-2">Stock</th>
                         <th />
                       </tr>
@@ -270,15 +273,17 @@ function VariantRow({
 }: {
   variant: AdminVariant;
   saving: boolean;
-  onUpdate: (field: 'price_clp' | 'stock_qty', value: number) => void;
+  onUpdate: (field: 'price_clp' | 'stock_qty' | 'compare_at_price_clp', value: number) => void;
   onDelete: () => void;
   canDelete: boolean;
 }) {
   const [price, setPrice] = useState(variant.price_clp);
   const [stock, setStock] = useState(variant.stock_qty);
+  const [compareAt, setCompareAt] = useState(variant.compare_at_price_clp ?? 0);
 
   useEffect(() => setPrice(variant.price_clp), [variant.price_clp]);
   useEffect(() => setStock(variant.stock_qty), [variant.stock_qty]);
+  useEffect(() => setCompareAt(variant.compare_at_price_clp ?? 0), [variant.compare_at_price_clp]);
 
   const sizeLabel = variant.size_g >= 1000 ? `${variant.size_g / 1000} kg` : `${variant.size_g} g`;
 
@@ -287,6 +292,11 @@ function VariantRow({
   };
   const commitStock = () => {
     if (stock !== variant.stock_qty) onUpdate('stock_qty', stock);
+  };
+  const commitCompareAt = () => {
+    if (compareAt !== (variant.compare_at_price_clp ?? 0)) {
+      onUpdate('compare_at_price_clp', compareAt);
+    }
   };
 
   return (
@@ -305,6 +315,27 @@ function VariantRow({
             className="w-28 rounded-md border border-tengu-dark/15 px-2 py-1 text-right"
           />
           <span className="text-xs text-tengu-dark/50">{formatCLP(price)}</span>
+        </div>
+      </td>
+      <td className="py-2">
+        <div className="inline-flex items-center gap-2">
+          <span className="text-tengu-dark/60">$</span>
+          <input
+            type="number"
+            min={0}
+            value={compareAt}
+            onChange={(e) => setCompareAt(Number(e.target.value))}
+            onBlur={commitCompareAt}
+            onKeyDown={(e) => e.key === 'Enter' && commitCompareAt()}
+            placeholder="0"
+            title="Precio antes de la oferta. Vacío o 0 = sin oferta."
+            className="w-24 rounded-md border border-tengu-dark/15 px-2 py-1 text-right"
+          />
+          {compareAt > price && (
+            <span className="rounded-full bg-tengu-coral/10 px-2 py-0.5 text-[10px] font-bold text-tengu-coral">
+              -{Math.round((1 - price / compareAt) * 100)}%
+            </span>
+          )}
         </div>
       </td>
       <td className="py-2">

@@ -16,6 +16,22 @@ export default function ProductCard({ product }: { product: Product }) {
     product.variants[0],
   );
   const perKgBest = pricePerKg(bestByKg.price_clp, bestByKg.size_g);
+  // Si TODAS las variantes tienen stock_low=0 (todas explícitamente sin stock), mostramos badge "Sin stock".
+  // Si alguna tiene stock_low entre 1 y 5, mostramos "Últimas unidades".
+  const allExposedAreZero =
+    product.variants.length > 0 &&
+    product.variants.every((v) => v.stock_low === 0);
+  const someLow = product.variants.some(
+    (v) => v.stock_low !== null && v.stock_low > 0 && v.stock_low <= 5,
+  );
+  // Mejor oferta entre variantes: porcentaje de descuento.
+  const bestOff = product.variants.reduce<number>((max, v) => {
+    if (v.compare_at_price_clp && v.compare_at_price_clp > v.price_clp) {
+      const pct = Math.round((1 - v.price_clp / v.compare_at_price_clp) * 100);
+      return Math.max(max, pct);
+    }
+    return max;
+  }, 0);
 
   return (
     <Link
@@ -35,6 +51,19 @@ export default function ProductCard({ product }: { product: Product }) {
         <span className="absolute right-3 top-3 rounded-full bg-tengu-dark/90 px-3 py-1 text-xs uppercase tracking-wider text-tengu-cream">
           {product.roast_profile}
         </span>
+        {allExposedAreZero ? (
+          <span className="absolute left-3 top-3 rounded-full bg-tengu-dark/80 px-3 py-1 text-xs uppercase tracking-wider text-tengu-cream">
+            Sin stock
+          </span>
+        ) : bestOff > 0 ? (
+          <span className="absolute left-3 top-3 rounded-full bg-tengu-coral px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+            -{bestOff}% OFF
+          </span>
+        ) : someLow ? (
+          <span className="absolute left-3 top-3 rounded-full bg-tengu-mustard px-3 py-1 text-xs font-semibold uppercase tracking-wider text-tengu-dark">
+            ⚠ Últimas unidades
+          </span>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <p className="text-xs uppercase tracking-wider text-tengu-mustard">{product.origin}</p>
@@ -45,9 +74,16 @@ export default function ProductCard({ product }: { product: Product }) {
           </p>
         )}
         <div className="mt-auto flex items-baseline justify-between pt-2">
-          <p className="text-sm font-semibold text-tengu-ink">
-            desde {formatCLP(cheapest.price_clp)}
-          </p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-sm font-semibold text-tengu-ink">
+              desde {formatCLP(cheapest.price_clp)}
+            </p>
+            {cheapest.compare_at_price_clp && cheapest.compare_at_price_clp > cheapest.price_clp && (
+              <p className="text-xs text-tengu-dark/40 line-through">
+                {formatCLP(cheapest.compare_at_price_clp)}
+              </p>
+            )}
+          </div>
           <p className="text-xs text-tengu-dark/50">
             {formatSize(bestByKg.size_g)} a {formatCLP(perKgBest)}/kg
           </p>

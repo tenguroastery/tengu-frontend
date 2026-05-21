@@ -50,7 +50,7 @@ export default function AdminSettings() {
       </p>
 
       <div className="mt-8 space-y-6 rounded-xl bg-white p-6 shadow-sm">
-        <Section title="Envíos">
+        <Section title="Envíos & Stock">
           <Field label="Umbral envío gratis (CLP)" hint="Si subtotal ≥ este monto, el envío es gratis. Pon 0 para desactivar.">
             <input
               type="number"
@@ -59,6 +59,18 @@ export default function AdminSettings() {
               value={draft.free_shipping_threshold_clp}
               onChange={(e) =>
                 setDraft({ ...draft, free_shipping_threshold_clp: parseInt(e.target.value || '0', 10) })
+              }
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Umbral stock bajo" hint="Si una variante tiene ≤ este número, se muestra 'Quedan X' o 'Últimas unidades' al cliente. 0 desactiva.">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={draft.low_stock_threshold}
+              onChange={(e) =>
+                setDraft({ ...draft, low_stock_threshold: parseInt(e.target.value || '0', 10) })
               }
               className={inputCls}
             />

@@ -2,6 +2,10 @@ export type Variant = {
   id: number;
   size_g: number;
   price_clp: number;
+  /** Stock expuesto solo cuando es bajo. null = stock alto (no exponemos). */
+  stock_low: number | null;
+  /** Precio "antes" tachado. null = sin oferta activa. */
+  compare_at_price_clp: number | null;
 };
 
 export type Product = {
@@ -41,6 +45,8 @@ export type SiteSettings = {
   customer_accounts_enabled: boolean;
   wholesale_min_kg: number;
   wholesale_lead_msg: string;
+  /** Umbral para mostrar "Quedan X disponibles" en producto. 0 desactiva. */
+  low_stock_threshold: number;
   // Barra anunciante (configurable desde /admin/settings)
   announcement_enabled: boolean;
   announcement_text: string;
@@ -109,6 +115,7 @@ export type OrderPayload = {
   items: OrderItemPayload[];
   /** Honeypot anti-bot. Humanos no lo llenan; si llega, backend rechaza. */
   website?: string;
+  coupon_code?: string;
 };
 
 export type OrderItem = {
@@ -120,6 +127,16 @@ export type OrderItem = {
   quantity: number;
   subtotal_clp: number;
   grind: string;
+};
+
+export type CouponPreview = {
+  valid: boolean;
+  code: string;
+  discount_clp: number;
+  kind: 'percent' | 'fixed' | null;
+  value: number | null;
+  message: string | null;
+  description: string | null;
 };
 
 export type PaymentMethod = 'webpay' | 'khipu' | 'bank_transfer' | 'mercadopago';

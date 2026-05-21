@@ -133,6 +133,15 @@ export const api = {
     }),
   createOrder: (payload: OrderPayload) =>
     request<Order>('/orders', { method: 'POST', body: JSON.stringify(payload) }),
+  validateCoupon: (payload: {
+    code: string;
+    subtotal_clp: number;
+    items: { product_slug: string; category?: string; subtotal_clp: number }[];
+  }) =>
+    request<import('../types').CouponPreview>('/checkout/validate-coupon', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
   registerCartEvent: (payload: {
     customer_email: string;
     customer_name?: string;

@@ -7,6 +7,7 @@ import { grindLabel } from '../lib/grind';
 import { useRevalidationTick } from '../lib/useRevalidateOnFocus';
 import { selectCartSubtotal, useCart } from '../store/cart';
 import { useSiteSettings } from '../store/site';
+import type { Product } from '../types';
 
 export default function Cart() {
   const items = useCart((s) => s.items);
@@ -17,6 +18,7 @@ export default function Cart() {
   const reconcile = useCart((s) => s.reconcile);
   const siteSettings = useSiteSettings();
   const [reconcileNotice, setReconcileNotice] = useState<string | null>(null);
+  const [crossSell, setCrossSell] = useState<Product[]>([]);
   const tick = useRevalidationTick();
 
   // Al montar /carrito y al volver al foco, refrescamos precios y removemos
@@ -36,6 +38,24 @@ export default function Cart() {
           parts.push(`Actualizamos precios: ${report.priceUpdated.join(', ')}`);
         }
         if (parts.length) setReconcileNotice(parts.join('. ') + '.');
+
+        // Cross-sell: hasta 3 productos relacionados (misma categoría que algún
+        // item del carrito; si no, los featured). Excluye los ya agregados y
+        // los sin stock expuesto en cero.
+        const cartSlugs = new Set(useCart.getState().items.map((i) => i.productSlug));
+        const cartCats = new Set(
+          useCart.getState().items.flatMap((i) => {
+            const p = fresh.find((fp) => fp.slug === i.productSlug);
+            return p ? [p.category] : [];
+          }),
+        );
+        const candidates = fresh.filter((p) => !cartSlugs.has(p.slug));
+        const inSameCat = candidates.filter((p) => cartCats.has(p.category));
+        const fallback = candidates.filter((p) => p.featured && !cartCats.has(p.category));
+        const ordered = [...inSameCat, ...fallback].filter(
+          (p) => !p.variants.every((v) => v.stock_low === 0),
+        );
+        setCrossSell(ordered.slice(0, 3));
       })
       .catch(() => undefined);
     return () => { cancelled = true; };
@@ -191,6 +211,44 @@ export default function Cart() {
           </button>
         </aside>
       </div>
+
+      {crossSell.length > 0 && (
+        <section className="mt-16">
+          <h2 className="font-display text-2xl">También te puede gustar</h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            {crossSell.map((p) => {
+              const cheapest = p.variants.reduce(
+                (min, v) => (v.price_clp < min.price_clp ? v : min),
+                p.variants[0],
+              );
+              return (
+                <Link
+                  key={p.slug}
+                  to={`/cafe/${p.slug}`}
+                  className="group flex gap-4 rounded-lg bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md bg-tengu-cream">
+                    <SafeImg
+                      src={p.image ? `/uploads/${p.image}` : undefined}
+                      alt={p.name}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      width={96}
+                      height={96}
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col">
+                    <p className="text-[10px] uppercase tracking-wider text-tengu-mustard">{p.origin}</p>
+                    <h3 className="font-display text-sm leading-tight">{p.name}</h3>
+                    <p className="mt-auto text-xs font-semibold text-tengu-ink">
+                      desde {formatCLP(cheapest.price_clp)}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </section>
   );
 }

@@ -275,7 +275,19 @@ export default function Product() {
 
           <div className="mt-8 flex flex-wrap items-center gap-6">
             <div>
-              <p className="font-display text-3xl text-tengu-ink">{formatCLP(variant.price_clp * quantity)}</p>
+              <div className="flex flex-wrap items-baseline gap-3">
+                <p className="font-display text-3xl text-tengu-ink">{formatCLP(variant.price_clp * quantity)}</p>
+                {variant.compare_at_price_clp && variant.compare_at_price_clp > variant.price_clp && (
+                  <>
+                    <p className="text-base text-tengu-dark/40 line-through">
+                      {formatCLP(variant.compare_at_price_clp * quantity)}
+                    </p>
+                    <span className="rounded-full bg-tengu-coral px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      -{Math.round((1 - variant.price_clp / variant.compare_at_price_clp) * 100)}%
+                    </span>
+                  </>
+                )}
+              </div>
               <p className="mt-1 text-xs text-tengu-dark/50">
                 {variant.size_g >= 1000
                   ? `${formatCLP(pricePerKg(variant.price_clp, variant.size_g))} por kilo`
@@ -284,11 +296,22 @@ export default function Product() {
             </div>
             <button
               onClick={handleAdd}
-              className="rounded-md bg-tengu-mustard px-6 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white"
+              disabled={variant.stock_low === 0}
+              className="rounded-md bg-tengu-mustard px-6 py-3 text-sm font-semibold uppercase tracking-wider text-tengu-dark transition hover:bg-tengu-coral hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-tengu-mustard disabled:hover:text-tengu-dark"
             >
-              Agregar al carrito
+              {variant.stock_low === 0 ? 'Sin stock' : 'Agregar al carrito'}
             </button>
           </div>
+          {variant.stock_low !== null && variant.stock_low > 0 && variant.stock_low <= 5 && (
+            <p className="mt-3 text-sm font-semibold text-tengu-coral">
+              ⚠ Últimas {variant.stock_low} unidades — apurate
+            </p>
+          )}
+          {variant.stock_low !== null && variant.stock_low > 5 && (
+            <p className="mt-3 text-xs text-tengu-dark/60">
+              Quedan {variant.stock_low} unidades disponibles
+            </p>
+          )}
           {justAdded && (
             <p className="mt-3 text-sm font-medium text-tengu-ink">
               ✓ Agregado al carrito

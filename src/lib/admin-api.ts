@@ -52,6 +52,7 @@ export type AdminVariant = {
   size_g: number;
   price_clp: number;
   stock_qty: number;
+  compare_at_price_clp: number | null;
 };
 
 export type AdminProduct = {
@@ -158,6 +159,39 @@ export type ProcessSubOut = {
   order: Order;
 };
 
+export type AdminDiscountCode = {
+  id: number;
+  code: string;
+  description: string | null;
+  kind: 'percent' | 'fixed';
+  value: number;
+  min_subtotal_clp: number;
+  valid_from: string | null;
+  valid_until: string | null;
+  max_uses: number | null;
+  used_count: number;
+  applies_to: 'all' | 'category' | 'product';
+  applies_value: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type DiscountCodeCreatePayload = {
+  code: string;
+  description?: string | null;
+  kind: 'percent' | 'fixed';
+  value: number;
+  min_subtotal_clp?: number;
+  valid_from?: string | null;
+  valid_until?: string | null;
+  max_uses?: number | null;
+  applies_to?: 'all' | 'category' | 'product';
+  applies_value?: string | null;
+  is_active?: boolean;
+};
+
+export type DiscountCodePatchPayload = Partial<Omit<DiscountCodeCreatePayload, 'code'>>;
+
 export type AbandonedCart = {
   id: number;
   customer_email: string;
@@ -255,7 +289,7 @@ export const adminApi = {
     request<Post>(`/admin/posts/${slug}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   deletePost: (slug: string) =>
     request<void>(`/admin/posts/${slug}`, { method: 'DELETE' }),
-  updateVariant: (id: number, payload: { price_clp?: number; stock_qty?: number }) =>
+  updateVariant: (id: number, payload: { price_clp?: number; stock_qty?: number; compare_at_price_clp?: number }) =>
     request<AdminVariant>(`/admin/products/variants/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
@@ -314,6 +348,15 @@ export const adminApi = {
     }),
   deleteComunaZone: (id: number) =>
     request<void>(`/admin/site/comuna-zones/${id}`, { method: 'DELETE' }),
+
+  // Códigos de descuento
+  listDiscountCodes: () => request<AdminDiscountCode[]>('/admin/discount-codes'),
+  createDiscountCode: (payload: DiscountCodeCreatePayload) =>
+    request<AdminDiscountCode>('/admin/discount-codes', { method: 'POST', body: JSON.stringify(payload) }),
+  updateDiscountCode: (id: number, payload: DiscountCodePatchPayload) =>
+    request<AdminDiscountCode>(`/admin/discount-codes/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteDiscountCode: (id: number) =>
+    request<void>(`/admin/discount-codes/${id}`, { method: 'DELETE' }),
 
   // Carritos abandonados
   listAbandonedCarts: (status?: string) =>
