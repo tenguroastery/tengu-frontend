@@ -32,6 +32,7 @@ export default function Header() {
           )}
           <NavLink to="/sobre-nosotros" className={navClass}>Nosotros</NavLink>
           <NavLink to="/blog" className={navClass}>Blog</NavLink>
+          <NavLink to="/horeca" className={navClass}>Mayorista</NavLink>
           <InstagramLink className="text-tengu-cream/70 transition hover:text-tengu-mustard">
             <InstagramIcon size={20} />
           </InstagramLink>

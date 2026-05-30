@@ -28,6 +28,9 @@ export default function HeroCarousel() {
     return () => clearInterval(id);
   }, [paused]);
 
+  const go = (delta: number) =>
+    setCurrent((c) => (c + delta + SLIDES.length) % SLIDES.length);
+
   return (
     <section
       className="relative isolate overflow-hidden bg-tengu-dark text-tengu-cream"
@@ -114,6 +117,24 @@ export default function HeroCarousel() {
         </div>
       </div>
 
+      {/* Flechas prev/next — siempre visibles (semi-transparentes) */}
+      <button
+        type="button"
+        onClick={() => go(-1)}
+        aria-label="Imagen anterior"
+        className="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-tengu-dark/40 text-tengu-cream ring-1 ring-tengu-cream/30 backdrop-blur transition hover:bg-tengu-dark/75 hover:text-tengu-mustard sm:left-5"
+      >
+        <Chevron dir="left" />
+      </button>
+      <button
+        type="button"
+        onClick={() => go(1)}
+        aria-label="Imagen siguiente"
+        className="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-tengu-dark/40 text-tengu-cream ring-1 ring-tengu-cream/30 backdrop-blur transition hover:bg-tengu-dark/75 hover:text-tengu-mustard sm:right-5"
+      >
+        <Chevron dir="right" />
+      </button>
+
       {/* Dots indicator */}
       <div
         className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2"
@@ -136,5 +157,23 @@ export default function HeroCarousel() {
         ))}
       </div>
     </section>
+  );
+}
+
+function Chevron({ dir }: { dir: 'left' | 'right' }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {dir === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
+    </svg>
   );
 }

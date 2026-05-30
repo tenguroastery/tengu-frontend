@@ -18,6 +18,24 @@ const APPLIES_LABEL: Record<AdminDiscountCode['applies_to'], string> = {
   product: 'Producto',
 };
 
+/** ISO UTC (lo que guarda el backend) → valor para <input type="datetime-local">
+ * en hora LOCAL del navegador (Chile). Simétrico con `localInputToIso`: sin esto,
+ * mostrábamos la hora UTC cruda y cada reedición corría la hora por el offset. */
+function isoToLocalInput(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Valor de <input type="datetime-local"> (hora local) → ISO UTC para el backend. */
+function localInputToIso(value: string): string | null {
+  if (!value) return null;
+  const d = new Date(value); // datetime-local sin tz → se interpreta como hora local
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 function emptyDraft(): DiscountCodeCreatePayload {
   return {
     code: '',
@@ -317,8 +335,8 @@ function CouponForm({
           <span className="text-xs uppercase tracking-wider text-tengu-dark/70">Válido desde</span>
           <input
             type="datetime-local"
-            value={draft.valid_from ? draft.valid_from.slice(0, 16) : ''}
-            onChange={(e) => update('valid_from', e.target.value ? new Date(e.target.value).toISOString() : null)}
+            value={isoToLocalInput(draft.valid_from)}
+            onChange={(e) => update('valid_from', localInputToIso(e.target.value))}
             className={input}
           />
         </label>
@@ -326,8 +344,8 @@ function CouponForm({
           <span className="text-xs uppercase tracking-wider text-tengu-dark/70">Válido hasta</span>
           <input
             type="datetime-local"
-            value={draft.valid_until ? draft.valid_until.slice(0, 16) : ''}
-            onChange={(e) => update('valid_until', e.target.value ? new Date(e.target.value).toISOString() : null)}
+            value={isoToLocalInput(draft.valid_until)}
+            onChange={(e) => update('valid_until', localInputToIso(e.target.value))}
             className={input}
           />
         </label>
