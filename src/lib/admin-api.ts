@@ -355,6 +355,19 @@ export const adminApi = {
     request<Order[]>(`/admin/orders${status ? `?status=${status}` : ''}`),
   updateOrder: (id: number, payload: { status?: string; tracking_code?: string; admin_notes?: string }) =>
     request<Order>(`/admin/orders/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  // Descarga el CSV de pedidos con auth (un <a href> no manda el Bearer).
+  downloadOrdersCsv: async (status?: string): Promise<Blob> => {
+    const jwt = useAdmin.getState().jwt;
+    const res = await fetch(`${API_BASE}/admin/orders/export.csv${status ? `?status=${status}` : ''}`, {
+      headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+    });
+    if (res.status === 401 || res.status === 403) {
+      useAdmin.getState().clearSession();
+      throw new AdminAuthError();
+    }
+    if (!res.ok) throw new Error('No se pudo exportar el CSV');
+    return res.blob();
+  },
 
   listSubscriptions: () => request<AdminSubscription[]>('/admin/subscriptions'),
   exportSubscriptionsCsvUrl: (jwt: string) => `${API_BASE}/admin/subscriptions/export.csv?_=${jwt.slice(0, 8)}`,

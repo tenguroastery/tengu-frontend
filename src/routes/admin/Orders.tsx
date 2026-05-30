@@ -48,11 +48,34 @@ export default function AdminOrders() {
     setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
   };
 
+  const exportCsv = async () => {
+    try {
+      const blob = await adminApi.downloadOrdersCsv(filter === 'all' ? undefined : filter);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pedidos-tengu${filter === 'all' ? '' : `-${filter}`}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`No se pudo exportar: ${err instanceof Error ? err.message : err}`);
+    }
+  };
+
   return (
     <div className="p-6 md:p-10">
-      <header>
-        <h1 className="font-display text-3xl">Pedidos</h1>
-        <p className="mt-1 text-sm text-tengu-dark/60">{orders.length} resultados</p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl">Pedidos</h1>
+          <p className="mt-1 text-sm text-tengu-dark/60">{orders.length} resultados</p>
+        </div>
+        <button
+          onClick={exportCsv}
+          disabled={orders.length === 0}
+          className="rounded-md border border-tengu-ink px-4 py-2 text-xs font-semibold uppercase tracking-wider text-tengu-ink transition hover:bg-tengu-ink hover:text-white disabled:opacity-40"
+        >
+          ⬇ Exportar CSV
+        </button>
       </header>
 
       <div className="mt-6 flex flex-wrap gap-2">

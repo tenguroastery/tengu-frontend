@@ -22,6 +22,7 @@ export default function Product() {
   const [grindMethod, setGrindMethod] = useState<string>('molido');
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [related, setRelated] = useState<ProductT[]>([]);
 
   const addItem = useCart((s) => s.addItem);
   const tick = useRevalidationTick();
@@ -64,6 +65,25 @@ export default function Product() {
       .catch((err) => setError(String(err)))
       .finally(() => setLoading(false));
   }, [slug, tick]);
+
+  // Cross-sell: hasta 4 productos relacionados (misma categoría primero),
+  // excluyendo el actual y los sin stock. Sube el ticket promedio.
+  useEffect(() => {
+    if (!product) return;
+    let cancelled = false;
+    api.listProducts()
+      .then((all) => {
+        if (cancelled) return;
+        const candidates = all.filter(
+          (p) => p.slug !== product.slug && !p.variants.every((v) => v.stock_low === 0),
+        );
+        const sameCat = candidates.filter((p) => p.category === product.category);
+        const others = candidates.filter((p) => p.category !== product.category);
+        setRelated([...sameCat, ...others].slice(0, 4));
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [product?.slug, product?.category]);
 
   useSeo({
     title: product ? shortenProductTitle(product.name, product.origin) : 'Café de especialidad',
@@ -344,6 +364,44 @@ export default function Product() {
       </div>
 
       <ReviewsSection productSlug={product.slug} productName={product.name} />
+
+      {related.length > 0 && (
+        <section className="mt-16">
+          <h2 className="font-display text-2xl">También te puede gustar</h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((p) => {
+              const cheapest = p.variants.reduce(
+                (min, v) => (v.price_clp < min.price_clp ? v : min),
+                p.variants[0],
+              );
+              return (
+                <Link
+                  key={p.slug}
+                  to={`/cafe/${p.slug}`}
+                  className="group rounded-lg bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  <div className="aspect-square overflow-hidden rounded-md bg-tengu-cream">
+                    <SafeImg
+                      src={p.image ? `/uploads/${p.image}` : undefined}
+                      alt={p.name}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      width={200}
+                      height={200}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <p className="mt-3 text-[10px] uppercase tracking-wider text-tengu-mustard">{p.origin}</p>
+                  <h3 className="font-display text-sm leading-tight">{p.name}</h3>
+                  <p className="mt-1 text-xs font-semibold text-tengu-ink">
+                    desde {formatCLP(cheapest.price_clp)}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Spacer para que el sticky no tape el último contenido en mobile */}
       <div aria-hidden="true" className="h-24 md:hidden" />
