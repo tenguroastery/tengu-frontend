@@ -25,8 +25,10 @@ import AdminCategories from './routes/admin/Categories';
 import AdminCoffeeSubscriptions from './routes/admin/CoffeeSubscriptions';
 import AdminCoupons from './routes/admin/Coupons';
 import AdminDashboard from './routes/admin/Dashboard';
+import AdminHero from './routes/admin/Hero';
 import AdminLayout from './routes/admin/Layout';
 import AdminLogin from './routes/admin/Login';
+import AdminMayorista from './routes/admin/Mayorista';
 import AdminLoginVerify from './routes/admin/LoginVerify';
 import AdminOrders from './routes/admin/Orders';
 import AdminPosts from './routes/admin/Posts';
@@ -106,9 +108,11 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="carrusel" element={<AdminHero />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="carritos" element={<AdminAbandonedCarts />} />
+            <Route path="mayorista" element={<AdminMayorista />} />
             <Route path="cupones" element={<AdminCoupons />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="posts" element={<AdminPosts />} />

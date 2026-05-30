@@ -45,9 +45,11 @@ export default function AdminLayout() {
         <nav className="flex-1 space-y-1 px-3">
           <NavLink to="/admin" end className={linkClass}>📊 Dashboard</NavLink>
           <NavLink to="/admin/products" className={linkClass}>☕ Productos</NavLink>
+          <NavLink to="/admin/carrusel" className={linkClass}>🖼 Carrusel</NavLink>
           <NavLink to="/admin/categories" className={linkClass}>🏷 Categorías</NavLink>
           <NavLink to="/admin/orders" className={linkClass}>📦 Pedidos</NavLink>
           <NavLink to="/admin/carritos" className={linkClass}>🛒 Carritos</NavLink>
+          <NavLink to="/admin/mayorista" className={linkClass}>🏢 Mayorista</NavLink>
           <NavLink to="/admin/cupones" className={linkClass}>🎟 Cupones</NavLink>
           <NavLink to="/admin/reviews" className={linkClass}>⭐ Reseñas</NavLink>
           <NavLink to="/admin/posts" className={linkClass}>📝 Blog</NavLink>

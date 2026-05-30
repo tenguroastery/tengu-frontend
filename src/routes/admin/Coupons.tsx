@@ -6,6 +6,7 @@ import {
   type DiscountCodeCreatePayload,
 } from '../../lib/admin-api';
 import { formatCLP } from '../../lib/api';
+import { isoToLocalInput, localInputToIso } from '../../lib/datetime';
 
 const KIND_LABEL: Record<AdminDiscountCode['kind'], string> = {
   percent: '% off',
@@ -17,24 +18,6 @@ const APPLIES_LABEL: Record<AdminDiscountCode['applies_to'], string> = {
   category: 'Categoría',
   product: 'Producto',
 };
-
-/** ISO UTC (lo que guarda el backend) → valor para <input type="datetime-local">
- * en hora LOCAL del navegador (Chile). Simétrico con `localInputToIso`: sin esto,
- * mostrábamos la hora UTC cruda y cada reedición corría la hora por el offset. */
-function isoToLocalInput(iso: string | null | undefined): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/** Valor de <input type="datetime-local"> (hora local) → ISO UTC para el backend. */
-function localInputToIso(value: string): string | null {
-  if (!value) return null;
-  const d = new Date(value); // datetime-local sin tz → se interpreta como hora local
-  return Number.isNaN(d.getTime()) ? null : d.toISOString();
-}
 
 function emptyDraft(): DiscountCodeCreatePayload {
   return {

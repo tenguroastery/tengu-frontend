@@ -192,6 +192,37 @@ export type DiscountCodeCreatePayload = {
 
 export type DiscountCodePatchPayload = Partial<Omit<DiscountCodeCreatePayload, 'code'>>;
 
+export type AdminHeroSlide = {
+  id: number;
+  image: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  cta_label: string;
+  cta_url: string;
+  sort_order: number;
+  is_active: boolean;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HeroSlideCreatePayload = {
+  image: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  cta_label?: string;
+  cta_url?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  starts_at?: string | null;
+  ends_at?: string | null;
+};
+
+export type HeroSlidePatchPayload = Partial<HeroSlideCreatePayload>;
+
 export type AbandonedCart = {
   id: number;
   customer_email: string;
@@ -211,6 +242,22 @@ export type AbandonedCart = {
   last_reminder_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type AdminHorecaLead = {
+  id: number;
+  company: string;
+  contact_name: string;
+  email: string;
+  phone: string;
+  city: string | null;
+  business_type: string | null;
+  kg_per_month: string | null;
+  machine_type: string | null;
+  message: string | null;
+  contacted_at: string | null;
+  notes: string | null;
+  created_at: string;
 };
 
 export type AdminReview = {
@@ -349,6 +396,15 @@ export const adminApi = {
   deleteComunaZone: (id: number) =>
     request<void>(`/admin/site/comuna-zones/${id}`, { method: 'DELETE' }),
 
+  // Carrusel del home (hero slides)
+  listHeroSlides: () => request<AdminHeroSlide[]>('/admin/hero-slides'),
+  createHeroSlide: (payload: HeroSlideCreatePayload) =>
+    request<AdminHeroSlide>('/admin/hero-slides', { method: 'POST', body: JSON.stringify(payload) }),
+  updateHeroSlide: (id: number, payload: HeroSlidePatchPayload) =>
+    request<AdminHeroSlide>(`/admin/hero-slides/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteHeroSlide: (id: number) =>
+    request<void>(`/admin/hero-slides/${id}`, { method: 'DELETE' }),
+
   // Códigos de descuento
   listDiscountCodes: () => request<AdminDiscountCode[]>('/admin/discount-codes'),
   createDiscountCode: (payload: DiscountCodeCreatePayload) =>
@@ -368,6 +424,14 @@ export const adminApi = {
     }),
   deleteAbandonedCart: (id: number) =>
     request<void>(`/admin/abandoned-carts/${id}`, { method: 'DELETE' }),
+
+  // Leads Mayorista (Horeca)
+  listHorecaLeads: (status?: string) =>
+    request<AdminHorecaLead[]>(`/admin/horeca-leads${status ? `?status=${status}` : ''}`),
+  updateHorecaLead: (id: number, payload: { contacted?: boolean; notes?: string }) =>
+    request<AdminHorecaLead>(`/admin/horeca-leads/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteHorecaLead: (id: number) =>
+    request<void>(`/admin/horeca-leads/${id}`, { method: 'DELETE' }),
 
   // Reseñas
   listReviews: (status?: string) =>

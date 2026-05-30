@@ -71,6 +71,16 @@ export type SiteSettings = {
   promo_dismiss_days: number;
 };
 
+export type HeroSlide = {
+  id: number;
+  image: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  cta_label: string;
+  cta_url: string;
+};
+
 export type Post = {
   id: number;
   slug: string;

@@ -1,6 +1,7 @@
 import type { CustomerProfile } from '../store/auth';
 import type {
   CoffeeSubscription,
+  HeroSlide,
   KhipuInit,
   MercadoPagoInit,
   Order,
@@ -204,6 +205,9 @@ export const api = {
 
   // --- Site settings (configurables desde /admin) ---
   getSiteSettings: () => request<SiteSettings>('/site/settings'),
+
+  // --- Slides del carrusel del home (configurables desde /admin) ---
+  getHeroSlides: () => request<HeroSlide[]>('/site/hero-slides'),
 
   // --- Regiones + comunas (catálogo para selects de checkout) ---
   listRegions: () => request<Array<{ name: string; comunas: string[] }>>('/site/regions'),
