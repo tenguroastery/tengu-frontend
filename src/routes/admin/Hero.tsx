@@ -15,6 +15,7 @@ function emptyDraft(): HeroSlideCreatePayload {
     subtitle: '',
     cta_label: '',
     cta_url: '',
+    image_has_text: false,
     sort_order: 100,
     is_active: true,
     starts_at: null,
@@ -53,6 +54,7 @@ export default function AdminHero() {
       subtitle: s.subtitle,
       cta_label: s.cta_label,
       cta_url: s.cta_url,
+      image_has_text: s.image_has_text,
       sort_order: s.sort_order,
       is_active: s.is_active,
       starts_at: s.starts_at,
@@ -254,6 +256,20 @@ function SlideForm({
             placeholder="/uploads/cyber.webp  o  hero-bg"
             className={`${input} mt-2 font-mono text-xs`}
           />
+        </label>
+        <label className="flex items-start gap-2 sm:col-span-2 rounded-md bg-white/60 p-3">
+          <input
+            type="checkbox"
+            checked={draft.image_has_text ?? false}
+            onChange={(e) => update('image_has_text', e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-tengu-mustard"
+          />
+          <span className="text-sm">
+            La imagen ya trae el texto
+            <span className="mt-0.5 block text-xs text-tengu-dark/60">
+              No superpone título/botón y la muestra completa sin recortar. Ideal para banners de promo (ej. tu imagen del Cyber). Los campos de texto de abajo se ignoran.
+            </span>
+          </span>
         </label>
         <label className="block">
           <span className="text-xs uppercase tracking-wider text-tengu-dark/70">Eyebrow (texto chico arriba)</span>

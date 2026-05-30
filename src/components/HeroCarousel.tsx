@@ -15,13 +15,15 @@ type RenderSlide = {
   subtitle: string;
   ctaLabel: string;
   ctaUrl: string;
+  /** Imagen que ya trae el texto: sin overlay y se muestra completa (contain). */
+  imageHasText: boolean;
 };
 
 // Fallback si el backend aún no devolvió slides (o falló): los 3 originales.
 const DEFAULT_SLIDES: RenderSlide[] = [
-  { image: 'hero-bg', alt: 'Tostando café en lotes pequeños', eyebrow: 'Tostado en Chile', title: '', subtitle: '', ctaLabel: '', ctaUrl: '' },
-  { image: 'hero-bag', alt: 'Bolsa de Marie Gorette Rwanda Natural', eyebrow: 'Origen único', title: '', subtitle: '', ctaLabel: '', ctaUrl: '' },
-  { image: 'hero-atmosphere', alt: 'Aroma del café recién extraído', eyebrow: 'Café de especialidad', title: '', subtitle: '', ctaLabel: '', ctaUrl: '' },
+  { image: 'hero-bg', alt: 'Tostando café en lotes pequeños', eyebrow: 'Tostado en Chile', title: '', subtitle: '', ctaLabel: '', ctaUrl: '', imageHasText: false },
+  { image: 'hero-bag', alt: 'Bolsa de Marie Gorette Rwanda Natural', eyebrow: 'Origen único', title: '', subtitle: '', ctaLabel: '', ctaUrl: '', imageHasText: false },
+  { image: 'hero-atmosphere', alt: 'Aroma del café recién extraído', eyebrow: 'Café de especialidad', title: '', subtitle: '', ctaLabel: '', ctaUrl: '', imageHasText: false },
 ];
 
 const DEFAULT_TITLE = (
@@ -44,6 +46,7 @@ function toRenderSlide(s: HeroSlide): RenderSlide {
     subtitle: s.subtitle,
     ctaLabel: s.cta_label,
     ctaUrl: s.cta_url,
+    imageHasText: s.image_has_text,
   };
 }
 
@@ -84,6 +87,8 @@ export default function HeroCarousel() {
   const hasCustomTitle = active.title.trim().length > 0;
   const ctaUrl = active.ctaUrl || '/tienda';
   const ctaLabel = active.ctaLabel || 'Comprar café';
+  // Si la imagen ya trae el texto, no superponemos nada encima.
+  const showOverlay = !active.imageHasText;
 
   return (
     <section
@@ -95,53 +100,67 @@ export default function HeroCarousel() {
     >
       {/* Slides */}
       {slides.map((slide, i) => (
-        <SlideImage key={`${slide.image}-${i}`} slide={slide} active={i === safe} eager={i === 0} />
+        <SlideImage
+          key={`${slide.image}-${i}`}
+          slide={slide}
+          active={i === safe}
+          eager={i === 0}
+          contain={slide.imageHasText}
+        />
       ))}
 
-      {/* Vignette suave para que el texto se lea, pero sin tapar la imagen */}
-      <div
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-tengu-dark/85 via-tengu-dark/35 to-transparent"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-tengu-dark/70 to-transparent"
-        aria-hidden="true"
-      />
+      {/* Vignette para que el texto se lea — solo si hay overlay */}
+      {showOverlay && (
+        <>
+          <div
+            className="absolute inset-0 -z-10 bg-gradient-to-r from-tengu-dark/85 via-tengu-dark/35 to-transparent"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-t from-tengu-dark/70 to-transparent"
+            aria-hidden="true"
+          />
+        </>
+      )}
 
-      {/* Contenido */}
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-24 md:grid-cols-2 md:items-center md:py-36">
-        <div className="relative">
-          <p
-            key={`eyebrow-${safe}`}
-            className="animate-[fadeIn_500ms_ease-out] text-xs uppercase tracking-[0.5em] text-tengu-mustard"
-          >
-            {active.eyebrow || 'Tostado en Chile'}
-          </p>
-          <h1 key={`title-${safe}`} className="mt-5 font-display text-5xl leading-[1.05] md:text-7xl">
-            {hasCustomTitle ? active.title : DEFAULT_TITLE}
-          </h1>
-          {(active.subtitle || !hasCustomTitle) && (
-            <p className="mt-7 max-w-md text-lg leading-relaxed text-tengu-cream/85">
-              {active.subtitle || DEFAULT_SUBTITLE}
+      {/* Contenido — min-height para que los slides "solo imagen" tengan altura */}
+      <div className="relative mx-auto grid min-h-[440px] max-w-6xl gap-10 px-6 py-24 md:min-h-[560px] md:grid-cols-2 md:items-center md:py-36">
+        {showOverlay && (
+          <div className="relative">
+            <p
+              key={`eyebrow-${safe}`}
+              className="animate-[fadeIn_500ms_ease-out] text-xs uppercase tracking-[0.5em] text-tengu-mustard"
+            >
+              {active.eyebrow || 'Tostado en Chile'}
             </p>
-          )}
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Cta url={ctaUrl} label={ctaLabel} />
-            {!hasCustomTitle && (
-              <Link
-                to="/sobre-nosotros"
-                className="text-sm uppercase tracking-wider text-tengu-cream/70 hover:text-tengu-mustard"
-              >
-                Conoce nuestra historia
-              </Link>
+            <h1 key={`title-${safe}`} className="mt-5 font-display text-5xl leading-[1.05] md:text-7xl">
+              {hasCustomTitle ? active.title : DEFAULT_TITLE}
+            </h1>
+            {(active.subtitle || !hasCustomTitle) && (
+              <p className="mt-7 max-w-md text-lg leading-relaxed text-tengu-cream/85">
+                {active.subtitle || DEFAULT_SUBTITLE}
+              </p>
             )}
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <Cta url={ctaUrl} label={ctaLabel} />
+              {!hasCustomTitle && (
+                <Link
+                  to="/sobre-nosotros"
+                  className="text-sm uppercase tracking-wider text-tengu-cream/70 hover:text-tengu-mustard"
+                >
+                  Conoce nuestra historia
+                </Link>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Lado derecho: un poco de aire */}
-        <div className="relative hidden md:block" aria-hidden="true">
-          <div className="absolute -right-10 top-10 h-72 w-72 rounded-full bg-tengu-mustard/15 blur-3xl" />
-        </div>
+        {/* Lado derecho: un poco de aire (solo con overlay) */}
+        {showOverlay && (
+          <div className="relative hidden md:block" aria-hidden="true">
+            <div className="absolute -right-10 top-10 h-72 w-72 rounded-full bg-tengu-mustard/15 blur-3xl" />
+          </div>
+        )}
       </div>
 
       {/* Flechas prev/next — solo si hay más de un slide */}
@@ -191,10 +210,22 @@ export default function HeroCarousel() {
   );
 }
 
-function SlideImage({ slide, active, eager }: { slide: RenderSlide; active: boolean; eager: boolean }) {
+function SlideImage({
+  slide,
+  active,
+  eager,
+  contain,
+}: {
+  slide: RenderSlide;
+  active: boolean;
+  eager: boolean;
+  contain: boolean;
+}) {
   const className = `pointer-events-none absolute inset-0 -z-10 transition-opacity duration-1000 ease-in-out ${
     active ? 'opacity-100' : 'opacity-0'
   }`;
+  // contain = la imagen ya trae texto → se muestra completa, sin recortar.
+  const fit = contain ? 'object-contain' : 'object-cover';
   // Nombre base (sin '/' ni extensión) → set responsive servido desde /public.
   const isResponsiveBase = !slide.image.includes('/') && !slide.image.includes('.');
 
@@ -212,7 +243,7 @@ function SlideImage({ slide, active, eager }: { slide: RenderSlide; active: bool
           srcSet={`/${b}-768w.jpg 768w, /${b}-1280w.jpg 1280w, /${b}.jpg 1920w`}
           sizes="100vw"
           alt=""
-          className="h-full w-full object-cover"
+          className={`h-full w-full ${fit}`}
           loading={eager ? 'eager' : 'lazy'}
           fetchPriority={eager ? 'high' : 'low'}
           decoding="async"
@@ -228,7 +259,7 @@ function SlideImage({ slide, active, eager }: { slide: RenderSlide; active: bool
       <img
         src={slide.image}
         alt=""
-        className="h-full w-full object-cover"
+        className={`h-full w-full ${fit}`}
         loading={eager ? 'eager' : 'lazy'}
         fetchPriority={eager ? 'high' : 'low'}
         decoding="async"

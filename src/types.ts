@@ -79,6 +79,8 @@ export type HeroSlide = {
   subtitle: string;
   cta_label: string;
   cta_url: string;
+  /** Si true, la imagen ya trae el texto: el carrusel no superpone nada y la muestra completa. */
+  image_has_text: boolean;
 };
 
 export type Post = {

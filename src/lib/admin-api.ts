@@ -200,6 +200,7 @@ export type AdminHeroSlide = {
   subtitle: string;
   cta_label: string;
   cta_url: string;
+  image_has_text: boolean;
   sort_order: number;
   is_active: boolean;
   starts_at: string | null;
@@ -215,6 +216,7 @@ export type HeroSlideCreatePayload = {
   subtitle?: string;
   cta_label?: string;
   cta_url?: string;
+  image_has_text?: boolean;
   sort_order?: number;
   is_active?: boolean;
   starts_at?: string | null;
