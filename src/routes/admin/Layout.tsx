@@ -12,15 +12,21 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export default function AdminLayout() {
-  const { jwt, email, clearSession } = useAdmin();
+  const { jwt, email, role, clearSession, setRole } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
   const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     if (!jwt) return;
-    adminApi.me().then(() => setVerified(true)).catch(() => clearSession());
-  }, [jwt, clearSession]);
+    adminApi
+      .me()
+      .then((m) => {
+        setRole(m.role);
+        setVerified(true);
+      })
+      .catch(() => clearSession());
+  }, [jwt, clearSession, setRole]);
 
   if (!jwt) {
     return <Navigate to={`/admin/login?next=${encodeURIComponent(location.pathname)}`} replace />;
@@ -57,6 +63,9 @@ export default function AdminLayout() {
           <NavLink to="/admin/subscriptions" className={linkClass}>✉️ Newsletter</NavLink>
           <NavLink to="/admin/shipping" className={linkClass}>🚚 Envíos</NavLink>
           <NavLink to="/admin/settings" className={linkClass}>⚙️ Configuración</NavLink>
+          <NavLink to="/admin/usuarios" className={linkClass}>
+            {role === 'super_admin' ? '👥 Usuarios' : '👤 Mi cuenta'}
+          </NavLink>
         </nav>
         <div className="border-t border-white/10 p-4 text-xs">
           <p className="text-tengu-cream/60">Sesión</p>

@@ -37,6 +37,7 @@ import AdminReviews from './routes/admin/Reviews';
 import AdminSettings from './routes/admin/Settings';
 import AdminShipping from './routes/admin/Shipping';
 import AdminSubscriptions from './routes/admin/Subscriptions';
+import AdminUsuarios from './routes/admin/Usuarios';
 import Cart from './routes/Cart';
 import Checkout from './routes/Checkout';
 import CheckoutError from './routes/CheckoutError';
@@ -120,6 +121,7 @@ export default function App() {
             <Route path="subscriptions" element={<AdminSubscriptions />} />
             <Route path="shipping" element={<AdminShipping />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="usuarios" element={<AdminUsuarios />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

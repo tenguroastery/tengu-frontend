@@ -21,7 +21,7 @@ export default function AdminLogin() {
     setError(null);
     try {
       const res = await adminApi.login(email.trim(), password);
-      setSession(res.jwt, res.email);
+      setSession(res.jwt, res.email, res.role);
       navigate(next, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No pudimos iniciar sesión');

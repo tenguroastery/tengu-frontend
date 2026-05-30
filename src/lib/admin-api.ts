@@ -246,6 +246,15 @@ export type AbandonedCart = {
   updated_at: string;
 };
 
+export type AdminUserAccount = {
+  id: number;
+  email: string;
+  role: 'super_admin' | 'admin';
+  is_active: boolean;
+  has_password: boolean;
+  created_at: string;
+};
+
 export type AdminHorecaLead = {
   id: number;
   company: string;
@@ -285,11 +294,24 @@ export type ReviewModeratePayload = {
 
 export const adminApi = {
   login: (email: string, password: string) =>
-    request<{ jwt: string; email: string; expires_in_hours: number }>('/admin/login', {
+    request<{ jwt: string; email: string; role: 'super_admin' | 'admin'; expires_in_hours: number }>('/admin/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
-  me: () => request<{ email: string }>('/admin/me'),
+  me: () => request<{ email: string; role: 'super_admin' | 'admin' }>('/admin/me'),
+
+  // --- Gestión de cuentas admin (solo super_admin, salvo changeMyPassword) ---
+  listAdminUsers: () => request<AdminUserAccount[]>('/admin/users'),
+  createAdminUser: (payload: { email: string; role: 'super_admin' | 'admin'; password?: string }) =>
+    request<AdminUserAccount>('/admin/users', { method: 'POST', body: JSON.stringify(payload) }),
+  updateAdminUser: (id: number, payload: { role?: 'super_admin' | 'admin'; is_active?: boolean }) =>
+    request<AdminUserAccount>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  setAdminUserPassword: (id: number, password: string) =>
+    request<AdminUserAccount>(`/admin/users/${id}/set-password`, { method: 'POST', body: JSON.stringify({ password }) }),
+  deleteAdminUser: (id: number) =>
+    request<void>(`/admin/users/${id}`, { method: 'DELETE' }),
+  changeMyPassword: (password: string) =>
+    request<AdminUserAccount>('/admin/users/me/password', { method: 'POST', body: JSON.stringify({ password }) }),
 
   listProducts: () => request<AdminProduct[]>('/admin/products'),
   listCategories: () => request<string[]>('/admin/products/categories'),
